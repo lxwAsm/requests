@@ -14,7 +14,7 @@ Response::Response(string &rep)
 			continue;
 		}
 		string key = line[i].substr(0, p);
-		string value = line[i].substr(p + 1, line[i].size() - 3 - p);
+		string value = line[i].substr(p + 1, line[i].size() - 1 - p);
 		header[key] = value;
 	}
 }
@@ -42,9 +42,17 @@ string	Response::GetText()const{
 string	Response::operator[](string key){
 	return header[key];
 }
-Request::Request(std::string url) :url(url)
+Request::Request(std::string url,const map<string, string> &head) :url(url)
 {
 	//http://www.baidu.com/hello?jack=123
+	header["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36\r\n";
+	header["Connection"] = "Keep-Alive";
+	if (header.size() > 0){
+		map<string, string>::const_iterator	begin = head.cbegin();
+		for (; begin != head.cend(); begin++){
+			header[begin->first] = begin->second;
+		}
+	}
 	int pos = url.find("://");
 	if (pos == -1) return;
 	int end = url.find('/', pos + 3);
@@ -58,6 +66,16 @@ Request::Request(std::string url) :url(url)
 		port = 80;
 		param = url.substr(end);
 	}
+}
+
+string Request::HeaderToString(){
+	string	head;
+	map<string, string>::const_iterator	begin = header.cbegin();
+	for (; begin != header.cend(); begin++){
+		head+=begin->first + ": " + begin->second + "\r\n";
+	}
+	head += "\r\n\r\n";//next to content;
+	return head;
 }
 
 Response::~Response(){
@@ -95,10 +113,10 @@ std::string GetIpByDomainName(const char *szHost)
 	return ip;
 }
 
-Response	Get(std::string url)
+Response	Get(std::string url, const map<string, string> &head)
 {
 	std::string ret = ""; //返回Http Response
-	Request	req(url);
+	Request	req(url,head);
 	try
 	{
 		// 开始进行socket初始化
@@ -116,9 +134,7 @@ Response	Get(std::string url)
 				
 			
 			std::string strSend = "GET " + req.param + " HTTP/1.1\r\n"
-				"Connection:Keep-Alive\r\n"
-				"host:" + req.domain + "\r\n"
-				"User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36\r\n\r\n";
+				"host:" + req.domain + "\r\n" + req.HeaderToString();
 			printf(strSend.c_str());
 			// 发送
 			errNo = send(clientSocket, strSend.c_str(), strSend.length(), 0);

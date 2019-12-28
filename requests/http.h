@@ -21,13 +21,15 @@ private:
 class Request
 {
 public:
-	Request(std::string url);
+	Request(std::string url,const map<string, string> &header);
 	~Request();
+	string	HeaderToString();
 	std::string	url;
 	std::string	domain;
 	std::string param;
+	map<string, string>	header;
 	int	port;
 };
 
 std::string GetIpByDomainName(const char *szHost);
-Response	Get(std::string url);
+Response	Get(std::string url, const map<string,string> &head = map<string,string>());
