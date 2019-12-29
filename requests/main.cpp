@@ -10,11 +10,11 @@ using	namespace std;
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-
+	
 	map<string, string>	header;
-	header["User-Agent"] = "User Defined Header ";
+	//header["User-Agent"] = "User Defined Header ";
 	int a;
-	Response rep = Get("http://47.106.162.182/112358.php",header);
+	Response rep = Post("http://47.106.162.182/post.php","name=lxw&age=24");
 	cout << rep["Server"] << endl;
 	cout << "-----------------------" << endl;
 	cout << rep.GetText() << endl;

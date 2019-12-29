@@ -42,11 +42,12 @@ string	Response::GetText()const{
 string	Response::operator[](string key){
 	return header[key];
 }
-Request::Request(std::string url,const map<string, string> &head) :url(url)
+Request::Request(std::string url, std::string method,map<string, string> &head) :url(url)
 {
 	//http://www.baidu.com/hello?jack=123
 	header["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36\r\n";
 	header["Connection"] = "Keep-Alive";
+	this->method = method;//请求get post delete put
 	if (header.size() > 0){
 		map<string, string>::const_iterator	begin = head.cbegin();
 		for (; begin != head.cend(); begin++){
@@ -67,6 +68,17 @@ Request::Request(std::string url,const map<string, string> &head) :url(url)
 		param = url.substr(end);
 	}
 }
+string  Request::GetRequest(const string &data){
+	if (method == "POST "){
+		//  ":[len]\r\n"
+		//  ":\r\n"
+		header["Content-Length"] = to_string(data.size()+2);
+		header["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+	}
+	return method + param + " HTTP/1.1\r\n"
+			"host:" + domain + "\r\n" + HeaderToString()+data;
+	
+}
 
 string Request::HeaderToString(){
 	string	head;
@@ -74,7 +86,7 @@ string Request::HeaderToString(){
 	for (; begin != header.cend(); begin++){
 		head+=begin->first + ": " + begin->second + "\r\n";
 	}
-	head += "\r\n\r\n";//next to content;
+	head += "\r\n";//next to content;
 	return head;
 }
 
@@ -113,10 +125,9 @@ std::string GetIpByDomainName(const char *szHost)
 	return ip;
 }
 
-Response	Get(std::string url, const map<string, string> &head)
-{
+Response	DoSend(std::string url, map<string, string> &head,string method="GET ",string data=""){
 	std::string ret = ""; //返回Http Response
-	Request	req(url,head);
+	Request	req(url,method,head);
 	try
 	{
 		// 开始进行socket初始化
@@ -131,10 +142,9 @@ Response	Get(std::string url, const map<string, string> &head)
 		int errNo = connect(clientSocket, (sockaddr*)&ServerAddr, sizeof(ServerAddr));
 		if (errNo == 0)
 		{
-				
-			
-			std::string strSend = "GET " + req.param + " HTTP/1.1\r\n"
-				"host:" + req.domain + "\r\n" + req.HeaderToString();
+
+
+			string strSend = req.GetRequest(data);//with post data
 			printf(strSend.c_str());
 			// 发送
 			errNo = send(clientSocket, strSend.c_str(), strSend.length(), 0);
@@ -152,7 +162,7 @@ Response	Get(std::string url, const map<string, string> &head)
 					else{ break; };
 				}
 
-			}	
+			}
 		}
 		::WSACleanup();
 	}
@@ -161,5 +171,14 @@ Response	Get(std::string url, const map<string, string> &head)
 		;
 	}
 	return Response(ret);
+
+}
+Response	Get(std::string url, map<string, string> &head)
+{
+	return DoSend(url, head);
+}
+
+Response	Post(std::string url, const string &data, map<string, string> &head){
+	return DoSend(url, head, "POST ", data);
 }
 
