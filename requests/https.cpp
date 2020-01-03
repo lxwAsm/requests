@@ -1,6 +1,6 @@
 #include "https.h"
 
-string https_get(const string &url){
+BinaryData https_get(const string &url){
 	LPCTSTR lpszAgent = L"WinInetGet/0.1";
 	//初始化
 	HINTERNET hInternet = InternetOpen(lpszAgent,
@@ -82,7 +82,7 @@ again:
 	//HTTP Response 的 Body, 需要的内容就在里面
 	DWORD dwBytesAvailable;
 	BYTE *pMessageBody = NULL;
-	string content;
+	BinaryData content(1000);
 	while (InternetQueryDataAvailable(hRequest, &dwBytesAvailable, 0, 0)) {
 		pMessageBody = (BYTE *)malloc(dwBytesAvailable + 1);
 		DWORD dwBytesRead;
@@ -95,10 +95,8 @@ again:
 		}
 		if (dwBytesRead == 0)
 			break; // End of File.
-		content += (char*)pMessageBody;
-		//pMessageBody[dwBytesRead] = '/0';
-		//printf("%s", pMessageBody); //InternetReadFile读出来的是普通的char. InternetReadFileEx 似乎是有宽字节版本的
-		//ofstream out("ofs.txt");
+		printf("fill data%d",dwBytesRead);
+		content.append(pMessageBody, dwBytesRead);
 	}
 	free(pMessageBody);
 	return content;

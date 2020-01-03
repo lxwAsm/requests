@@ -142,11 +142,8 @@ Response	DoSend(std::string url, map<string, string> &head,string method="GET ",
 		int errNo = connect(clientSocket, (sockaddr*)&ServerAddr, sizeof(ServerAddr));
 		if (errNo == 0)
 		{
-
-
 			string strSend = req.GetRequest(data);//with post data
 			printf(strSend.c_str());
-			// ·¢ËÍ
 			errNo = send(clientSocket, strSend.c_str(), strSend.length(), 0);
 			if (errNo > 0)
 			{

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include "http.h"
+#include "https.h"
 using	namespace std;
 
 
@@ -19,6 +20,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	cout << "-----------------------" << endl;
 	cout << rep.GetText() << endl;
 	cout << "-----------------------" << endl;
+	cout << "---------HTTPS----------" << endl;
+	BinaryData bin = https_get("www.baidu.com");
+	cout << bin.size() << endl;
+	cout << bin.to_string() << endl;
 	cin >> a;
 	return 0;
 }
