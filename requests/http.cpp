@@ -22,8 +22,8 @@ Response::Response(BinaryData rep)
 }
 
 Response::Response(std::string &h, BinaryData data){
-	int pos = h.find("\r\n\r\n");
-	string head = h.substr(0, pos);
+
+	string head = h;
 	pContent = data;
 	vector<string>	line;
 	SplitString(head, line, "\r\n");
@@ -36,7 +36,7 @@ Response::Response(std::string &h, BinaryData data){
 		string key = line[i].substr(0, p);
 		string value = line[i].substr(p + 1, line[i].size() - 1 - p);
 		header[key] = value;
-		printf("%s:%s\n", key.c_str(), value.c_str());
+		printf("https header%s:%s\n", key.c_str(), value.c_str());
 	}
 }
 void Response::SplitString(const string& s, vector<string>& v, const string& c)
@@ -101,8 +101,6 @@ Request::Request(std::string url, std::string method,map<string, string> &head) 
 }
 string  Request::GetRequest(const string &data){
 	if (method == "POST "){
-		//  ":[len]\r\n"
-		//  ":\r\n"
 		header["Content-Length"] = to_string(data.size()+2);
 		header["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
 	}
@@ -208,11 +206,13 @@ Response	Post(std::string url, const string &data, map<string, string> &head){
 }
 
 Response https_get(const string &url){
+	Request req(url,"GET ");
 	LPCTSTR lpszAgent = L"WinInetGet/0.1";
-	//初始化
 	HINTERNET hInternet = InternetOpen(lpszAgent,
 		INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
-	LPCTSTR lpszServerName = L"www.cnblogs.com";//"ssl.google-analytics.com"; //设置server
+	auto domain = s2ws(req.domain);
+	printf("domain:%S", domain.c_str());
+	LPCTSTR lpszServerName = domain.c_str();//"ssl.google-analytics.com"; //设置server
 	INTERNET_PORT nServerPort = INTERNET_DEFAULT_HTTPS_PORT; // HTTPS端口443
 	LPCTSTR lpszUserName = NULL; //无登录用户名
 	LPCTSTR lpszPassword = NULL; //无登录密码
@@ -226,7 +226,9 @@ Response https_get(const string &url){
 		dwConnectFlags, dwConnectContext);
 	//使用Get
 	LPCTSTR lpszVerb = L"GET";
-	LPCTSTR lpszObjectName = L"/jetyi/articles/2740802.html";
+	auto param = s2ws(req.param);
+	printf("param:%S", param.c_str());
+	LPCTSTR lpszObjectName = param.c_str();
 	LPCTSTR lpszVersion = L"HTTP/1.1";    // 默认.
 	LPCTSTR lpszReferrer = NULL;   // 没有引用页
 	LPCTSTR *lplpszAcceptTypes = NULL; // Accpet所有类型.
@@ -265,7 +267,6 @@ again:
 			&dwFlags, sizeof(dwFlags));
 		goto again;
 	}
-
 	//获得HTTP Response Header信息
 	DWORD dwInfoLevel = HTTP_QUERY_RAW_HEADERS_CRLF;
 	DWORD dwInfoBufferLength = 2048;
@@ -285,7 +286,7 @@ again:
 	pInfoBuffer[dwInfoBufferLength] = '/0';
 	pInfoBuffer[dwInfoBufferLength + 1] = '/0';
 	printf("Header:%S", pInfoBuffer); //很奇怪HttpQueryInfo保存的格式是wchar_t 和下面的InternetReadFile不一样
-	string header = (char*)pInfoBuffer;
+	wstring header = (WCHAR*)pInfoBuffer;
 	free(pInfoBuffer);
 	//HTTP Response 的 Body, 需要的内容就在里面
 	DWORD dwBytesAvailable;
@@ -307,6 +308,8 @@ again:
 		content.append(pMessageBody, dwBytesRead);
 		free(pMessageBody);
 	}
-	Response rep(header,content);
+	auto h = ws2s(header);
+	printf("new header %s\n", h.c_str());
+	Response rep(h,content);
 	return rep;
 }

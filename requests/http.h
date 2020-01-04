@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include "wininet.h"
 #include "BinaryData.h"
+#include "utils.h"
 #pragma comment(lib,"wininet.lib")
 #pragma comment(lib, "ws2_32.lib")
 using namespace std;
@@ -44,3 +45,4 @@ std::string GetIpByDomainName(const char *szHost);
 Response	Get(std::string url, const map<string,string> &head = map<string,string>());
 Response	Post(std::string url, const string &data,map<string, string> &head = map<string, string>());
 Response    https_get(const string &url);
+Response	https_post(const string &url, const string &data);
