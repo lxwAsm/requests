@@ -2,19 +2,26 @@
 #include <vector>
 #include <map>
 #include <Windows.h>
+#include "wininet.h"
+#include "BinaryData.h"
+#pragma comment(lib,"wininet.lib")
 #pragma comment(lib, "ws2_32.lib")
 using namespace std;
 class Response
 {
 public:
 	Response();
-	explicit Response(string &rep);
+	Response(BinaryData rep);
+	Response(std::string &h, BinaryData data);
 	~Response();
-	string	GetText()const;
+	string	GetText();
+	const  byte*GetBinary();
+	unsigned int size();
 	string	operator[](string key);
 private:
 	map<string, string>	header;
 	string	text;
+	BinaryData	pContent;
 	void SplitString(const string& s, vector<string>& v, const string& c);
 };
 
@@ -36,3 +43,4 @@ public:
 std::string GetIpByDomainName(const char *szHost);
 Response	Get(std::string url, const map<string,string> &head = map<string,string>());
 Response	Post(std::string url, const string &data,map<string, string> &head = map<string, string>());
+Response    https_get(const string &url);

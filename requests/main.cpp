@@ -21,9 +21,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	cout << rep.GetText() << endl;
 	cout << "-----------------------" << endl;
 	cout << "---------HTTPS----------" << endl;
-	BinaryData bin = https_get("www.baidu.com");
-	cout << bin.size() << endl;
-	cout << bin.to_string() << endl;
+	Response bin = https_get("www.baidu.com");
+	cout << bin["Server"] << endl;
+	cout << bin.GetText()<< endl;
 	cin >> a;
 	return 0;
 }
