@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
 #include <Windows.h>
 #include "wininet.h"
 #include "BinaryData.h"
@@ -12,8 +13,8 @@ class Response
 {
 public:
 	Response();
-	Response(BinaryData rep);
-	Response(std::string &h, BinaryData data);
+	Response(shared_ptr<BinaryData> rep);
+	Response(std::string &h,shared_ptr<BinaryData> data);
 	~Response();
 	string	GetText();
 	map<string, string>	Header();
@@ -23,7 +24,7 @@ public:
 private:
 	map<string, string>	header;
 	string	text;
-	BinaryData	pContent;
+	shared_ptr<BinaryData>	pContent;
 	void SplitString(const string& s, vector<string>& v, const string& c);
 };
 

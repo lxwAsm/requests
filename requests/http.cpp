@@ -1,10 +1,10 @@
 #include "http.h"
 
-Response::Response(BinaryData rep)
+Response::Response(shared_ptr<BinaryData> rep)
 {
-	int pos = rep.find("\r\n\r\n");
-	string head = rep.substr(0, pos);
-	rep.erase(0, pos+4);
+	int pos = rep->find("\r\n\r\n");
+	string head = rep->substr(0, pos);
+	rep->erase(0, pos+4);
 	pContent = rep;
 	vector<string>	line;
 	SplitString(head, line, "\r\n");
@@ -21,7 +21,7 @@ Response::Response(BinaryData rep)
 	}
 }
 
-Response::Response(std::string &h, BinaryData data){
+Response::Response(std::string &h,shared_ptr<BinaryData> data){
 	string head;
 	int pos = h.find("\r\n\r\n");
 	if (pos != -1){
@@ -62,18 +62,18 @@ void Response::SplitString(const string& s, vector<string>& v, const string& c)
 }
 
 string	Response::GetText(){
-	return pContent.to_string();
+	return pContent->to_string();
 }
 
 map<string, string>	Response::Header(){
 	return header;
 }
 const byte* Response::GetBinary(){
-	return pContent.raw_buffer();
+	return pContent->raw_buffer();
 }
 
 unsigned int Response::size(){
-	return pContent.size();
+	return pContent->size();
 }
 string	Response::operator[](string key){
 	return header[key];
@@ -162,7 +162,7 @@ std::string GetIpByDomainName(const char *szHost)
 }
 
 Response	DoSend(std::string url, map<string, string> &head,string method="GET ",string data=""){
-	BinaryData pData(1000);
+	shared_ptr<BinaryData> pData(new BinaryData(1000));
 	Request	req(url,method,head);
 	try
 	{
@@ -189,7 +189,7 @@ Response	DoSend(std::string url, map<string, string> &head,string method="GET ",
 					errNo = recv(clientSocket, (char*)bufRecv, 3069, 0);
 					if (errNo > 0)
 					{
-						pData.append(bufRecv, errNo);
+						pData->append(bufRecv, errNo);
 					}
 					else{ break; };
 				}
@@ -302,7 +302,7 @@ again:
 	//HTTP Response 的 Body, 需要的内容就在里面
 	DWORD dwBytesAvailable;
 	BYTE *pMessageBody = NULL;
-	BinaryData content(1000);
+	shared_ptr<BinaryData> content(new BinaryData(1000));
 	while (InternetQueryDataAvailable(hRequest, &dwBytesAvailable, 0, 0)) {
 		pMessageBody = (BYTE *)malloc(dwBytesAvailable + 1);
 		DWORD dwBytesRead;
@@ -316,7 +316,7 @@ again:
 		if (dwBytesRead == 0)
 			break; // End of File.
 		//printf("fill data%d",dwBytesRead);
-		content.append(pMessageBody, dwBytesRead);
+		content->append(pMessageBody, dwBytesRead);
 		free(pMessageBody);
 	}
 	auto h = ws2s(header);

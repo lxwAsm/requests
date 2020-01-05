@@ -25,9 +25,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	header = bin.Header();
 	cout << "File size: " << bin.size() << endl;
 	cout << bin["status"] << endl;
-	//ofstream png("baidu.jpg", ios::out | ios::binary);
-	//png.write((const char*)bin.GetBinary(), bin.size());
-	//png.close();
+	fstream png("baidu.jpg", ios::out | ios::binary);
+	png.write((const char*)bin.GetBinary(), bin.size());
+	png.close();
 	cin >> a;
 	return 0;
 }
