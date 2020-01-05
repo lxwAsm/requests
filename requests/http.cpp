@@ -22,21 +22,27 @@ Response::Response(BinaryData rep)
 }
 
 Response::Response(std::string &h, BinaryData data){
-
-	string head = h;
+	string head;
+	int pos = h.find("\r\n\r\n");
+	if (pos != -1){
+		head = h.substr(0, pos);
+	}
+	else{
+		head = h;
+	}
 	pContent = data;
 	vector<string>	line;
 	SplitString(head, line, "\r\n");
 	for (int i = 0; i < line.size(); i++){
 		int p = line[i].find(':');
-		if (p == -1){
+		if (p == -1 && line[i].find("HTTP/")!=-1){
 			header["status"] = line[i];
 			continue;
 		}
 		string key = line[i].substr(0, p);
 		string value = line[i].substr(p + 1, line[i].size() - 1 - p);
 		header[key] = value;
-		printf("https header%s:%s\n", key.c_str(), value.c_str());
+		//printf("https header%s:%s\n", key.c_str(), value.c_str());
 	}
 }
 void Response::SplitString(const string& s, vector<string>& v, const string& c)
@@ -59,6 +65,9 @@ string	Response::GetText(){
 	return pContent.to_string();
 }
 
+map<string, string>	Response::Header(){
+	return header;
+}
 const byte* Response::GetBinary(){
 	return pContent.raw_buffer();
 }
@@ -205,13 +214,13 @@ Response	Post(std::string url, const string &data, map<string, string> &head){
 	return DoSend(url, head, "POST ", data);
 }
 
-Response https_get(const string &url){
-	Request req(url,"GET ");
+Response https_get(const string &url, map<string, string> &head){
+	Request req(url,"GET ",head);
 	LPCTSTR lpszAgent = L"WinInetGet/0.1";
 	HINTERNET hInternet = InternetOpen(lpszAgent,
 		INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
 	auto domain = s2ws(req.domain);
-	printf("domain:%S", domain.c_str());
+	//printf("domain:%S", domain.c_str());
 	LPCTSTR lpszServerName = domain.c_str();//"ssl.google-analytics.com"; //设置server
 	INTERNET_PORT nServerPort = INTERNET_DEFAULT_HTTPS_PORT; // HTTPS端口443
 	LPCTSTR lpszUserName = NULL; //无登录用户名
@@ -227,7 +236,7 @@ Response https_get(const string &url){
 	//使用Get
 	LPCTSTR lpszVerb = L"GET";
 	auto param = s2ws(req.param);
-	printf("param:%S", param.c_str());
+	//printf("param:%S", param.c_str());
 	LPCTSTR lpszObjectName = param.c_str();
 	LPCTSTR lpszVersion = L"HTTP/1.1";    // 默认.
 	LPCTSTR lpszReferrer = NULL;   // 没有引用页
@@ -248,7 +257,9 @@ Response https_get(const string &url){
 	//发送Request
 again:
 	DWORD dwError = 0;
-	if (!HttpSendRequest(hRequest, NULL, 0, NULL, 0))
+	auto he = s2ws(req.HeaderToString());
+	printf("https:%S", he.c_str());
+	if (!HttpSendRequest(hRequest,he.c_str(), 0, NULL, 0))
 	{
 		dwError = GetLastError();
 	}
@@ -285,7 +296,7 @@ again:
 	}
 	pInfoBuffer[dwInfoBufferLength] = '/0';
 	pInfoBuffer[dwInfoBufferLength + 1] = '/0';
-	printf("Header:%S", pInfoBuffer); //很奇怪HttpQueryInfo保存的格式是wchar_t 和下面的InternetReadFile不一样
+	//printf("Header:%S", pInfoBuffer); //很奇怪HttpQueryInfo保存的格式是wchar_t 和下面的InternetReadFile不一样
 	wstring header = (WCHAR*)pInfoBuffer;
 	free(pInfoBuffer);
 	//HTTP Response 的 Body, 需要的内容就在里面
@@ -309,7 +320,7 @@ again:
 		free(pMessageBody);
 	}
 	auto h = ws2s(header);
-	printf("new header %s\n", h.c_str());
+	//printf("new header %s\n", h.c_str());
 	Response rep(h,content);
 	return rep;
 }

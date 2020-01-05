@@ -16,6 +16,7 @@ public:
 	Response(std::string &h, BinaryData data);
 	~Response();
 	string	GetText();
+	map<string, string>	Header();
 	const  byte*GetBinary();
 	unsigned int size();
 	string	operator[](string key);
@@ -44,5 +45,5 @@ public:
 std::string GetIpByDomainName(const char *szHost);
 Response	Get(std::string url, const map<string,string> &head = map<string,string>());
 Response	Post(std::string url, const string &data,map<string, string> &head = map<string, string>());
-Response    https_get(const string &url);
-Response	https_post(const string &url, const string &data);
+Response    https_get(const string &url,map<string, string> &head = map<string, string>());
+Response	https_post(const string &url, const string &data, const map<string, string> &head = map<string, string>());
