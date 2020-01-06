@@ -214,8 +214,17 @@ Response	Post(std::string url, const string &data, map<string, string> &head){
 	return DoSend(url, head, "POST ", data);
 }
 
-Response https_get(const string &url, map<string, string> &head){
-	Request req(url,"GET ",head);
+Response	request(string method,string url, BinaryData &data,map<string, string> &head){
+	return https_send(method, url, data, head);
+}
+Response https_get(string url, map<string, string> &head){
+	BinaryData db;
+	return request("GET", url,db, head);
+}
+
+
+Response	https_send(string method,string url, BinaryData &data,map<string, string> &head){
+	Request req(url,method+" ", head);
 	LPCTSTR lpszAgent = L"WinInetGet/0.1";
 	HINTERNET hInternet = InternetOpen(lpszAgent,
 		INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
@@ -234,7 +243,7 @@ Response https_get(const string &url, map<string, string> &head){
 		INTERNET_SERVICE_HTTP,
 		dwConnectFlags, dwConnectContext);
 	// π”√Get
-	LPCTSTR lpszVerb = L"GET";
+	LPCTSTR lpszVerb = s2ws(method).c_str();
 	auto param = s2ws(req.param);
 	//printf("param:%S", param.c_str());
 	LPCTSTR lpszObjectName = param.c_str();
@@ -259,7 +268,7 @@ again:
 	DWORD dwError = 0;
 	auto he = s2ws(req.HeaderToString());
 	printf("https:%S", he.c_str());
-	if (!HttpSendRequest(hRequest,he.c_str(), 0, NULL, 0))
+	if (!HttpSendRequest(hRequest, he.c_str(),method=="GET"? 0:-1,(LPVOID)data.raw_buffer(),data.size()))
 	{
 		dwError = GetLastError();
 	}
@@ -321,6 +330,6 @@ again:
 	}
 	auto h = ws2s(header);
 	//printf("new header %s\n", h.c_str());
-	Response rep(h,content);
+	Response rep(h, content);
 	return rep;
 }
