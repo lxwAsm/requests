@@ -207,23 +207,44 @@ Response	DoSend(std::string url, map<string, string> &head,string method="GET ",
 }
 Response	Get(std::string url, map<string, string> &head)
 {
-	return DoSend(url, head);
+	return https_get(url, head);
 }
 
-Response	Post(std::string url, const string &data, map<string, string> &head){
-	return DoSend(url, head, "POST ", data);
+Response	Post(std::string url,BinaryData &data, map<string, string> &head){
+	return https_post(url, data, head);
 }
 
 Response	request(string method,string url, BinaryData &data,map<string, string> &head){
-	return https_send(method, url, data, head);
+	DWORD	flags;
+	if (url.substr(0, 5) == "https"){
+		 flags = INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP |
+			INTERNET_FLAG_KEEP_CONNECTION |
+			INTERNET_FLAG_NO_AUTH |
+			//INTERNET_FLAG_NO_COOKIES |
+			INTERNET_FLAG_NO_UI |
+			//设置启用HTTPS
+			INTERNET_FLAG_SECURE |
+			INTERNET_FLAG_RELOAD;
+		return https_send(method, url, INTERNET_DEFAULT_HTTPS_PORT, flags,data, head);
+	}
+	else{
+		flags = INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_RELOAD;
+		return https_send(method, url, INTERNET_DEFAULT_HTTP_PORT,flags, data, head);
+	}
 }
+
 Response https_get(string url, map<string, string> &head){
 	BinaryData db;
-	return request("GET", url,db, head);
+	return request("GET", url,db, head); //request函数里面处理http和https
+}
+
+Response https_post(string url, BinaryData &data,map<string, string> &head){
+	return request("POST", url, data, head);
 }
 
 
-Response	https_send(string method,string url, BinaryData &data,map<string, string> &head){
+
+Response	https_send(string method,string url,int port,DWORD flags,BinaryData &data,map<string, string> &head){
 	Request req(url,method+" ", head);
 	LPCTSTR lpszAgent = L"WinInetGet/0.1";
 	HINTERNET hInternet = InternetOpen(lpszAgent,
@@ -231,7 +252,7 @@ Response	https_send(string method,string url, BinaryData &data,map<string, strin
 	auto domain = s2ws(req.domain);
 	//printf("domain:%S", domain.c_str());
 	LPCTSTR lpszServerName = domain.c_str();//"ssl.google-analytics.com"; //设置server
-	INTERNET_PORT nServerPort = INTERNET_DEFAULT_HTTPS_PORT; // HTTPS端口443
+	INTERNET_PORT nServerPort = port; // HTTPS端口443
 	LPCTSTR lpszUserName = NULL; //无登录用户名
 	LPCTSTR lpszPassword = NULL; //无登录密码
 	DWORD dwConnectFlags = 0;
@@ -250,14 +271,7 @@ Response	https_send(string method,string url, BinaryData &data,map<string, strin
 	LPCTSTR lpszVersion = L"HTTP/1.1";    // 默认.
 	LPCTSTR lpszReferrer = NULL;   // 没有引用页
 	LPCTSTR *lplpszAcceptTypes = NULL; // Accpet所有类型.
-	DWORD dwOpenRequestFlags = INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP |
-		INTERNET_FLAG_KEEP_CONNECTION |
-		INTERNET_FLAG_NO_AUTH |
-		INTERNET_FLAG_NO_COOKIES |
-		INTERNET_FLAG_NO_UI |
-		//设置启用HTTPS
-		INTERNET_FLAG_SECURE |
-		INTERNET_FLAG_RELOAD;
+	DWORD dwOpenRequestFlags = flags;
 	DWORD dwOpenRequestContext = 0;
 	//初始化Request
 	HINTERNET hRequest = HttpOpenRequest(hConnect, lpszVerb, lpszObjectName, lpszVersion,
@@ -305,7 +319,6 @@ again:
 	}
 	pInfoBuffer[dwInfoBufferLength] = '/0';
 	pInfoBuffer[dwInfoBufferLength + 1] = '/0';
-	//printf("Header:%S", pInfoBuffer); //很奇怪HttpQueryInfo保存的格式是wchar_t 和下面的InternetReadFile不一样
 	wstring header = (WCHAR*)pInfoBuffer;
 	free(pInfoBuffer);
 	//HTTP Response 的 Body, 需要的内容就在里面
@@ -324,12 +337,10 @@ again:
 		}
 		if (dwBytesRead == 0)
 			break; // End of File.
-		//printf("fill data%d",dwBytesRead);
 		content->append(pMessageBody, dwBytesRead);
 		free(pMessageBody);
 	}
 	auto h = ws2s(header);
-	//printf("new header %s\n", h.c_str());
 	Response rep(h, content);
 	return rep;
 }
