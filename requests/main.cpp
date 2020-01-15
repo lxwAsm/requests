@@ -18,6 +18,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	Response rep = https_post("http://47.106.162.182/post.php",bd);
 	cout << rep["kkk"] << endl;
 	cout << rep.GetText() << endl;
+	//Add some thing
 	cout << "-----------------------" << endl;
 	/*cout << "---------HTTPS----------" << endl;
 	Response bin = https_get("https://img12.360buyimg.com/n1/s450x450_jfs/t1/48975/24/16741/337144/5de0913eE206334a5/32c2af4c117024c3.jpg");
