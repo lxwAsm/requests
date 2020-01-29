@@ -12,6 +12,7 @@ Response::Response(shared_ptr<BinaryData> rep)
 		int p = line[i].find(':');
 		if (p == -1){
 			header["status"] = line[i];
+			this->status = status2int(line[i]);
 			continue;
 		}
 		string key = line[i].substr(0, p);
@@ -21,6 +22,12 @@ Response::Response(shared_ptr<BinaryData> rep)
 	}
 }
 
+unsigned int Response::status2int(string &st){
+	int s = st.find(' ');
+	int e = st.rfind(' ');
+	return atoi(st.substr(s + 1, e - s).c_str());
+	
+}
 Response::Response(std::string &h,shared_ptr<BinaryData> data){
 	string head;
 	int pos = h.find("\r\n\r\n");
@@ -37,6 +44,7 @@ Response::Response(std::string &h,shared_ptr<BinaryData> data){
 		int p = line[i].find(':');
 		if (p == -1 && line[i].find("HTTP/")!=-1){
 			header["status"] = line[i];
+			this->status = status2int(line[i]);
 			continue;
 		}
 		string key = line[i].substr(0, p);

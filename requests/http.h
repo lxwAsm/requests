@@ -21,11 +21,13 @@ public:
 	const  byte*GetBinary();
 	unsigned int size();
 	string	operator[](string key);
+	unsigned int status;
 private:
 	map<string, string>	header;
 	string	text;
 	shared_ptr<BinaryData>	pContent;
 	void SplitString(const string& s, vector<string>& v, const string& c);
+	unsigned int	status2int(string &s);
 };
 
 class Request

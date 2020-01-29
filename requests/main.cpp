@@ -16,8 +16,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	bd.append("name=lxe&age=14");
 	int a;
 	Response rep = https_post("http://47.106.162.182/post.php",bd);
-	cout << rep["kkk"] << endl;
+	cout << rep["status"] << endl;
 	cout << rep.GetText() << endl;
+	cout << rep.status << endl;
 	//Add some thing
 	cout << "-----------------------" << endl;
 	/*cout << "---------HTTPS----------" << endl;
