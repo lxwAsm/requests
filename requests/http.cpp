@@ -250,6 +250,18 @@ Response https_post(string url, BinaryData &data,map<string, string> &head){
 	return request("POST", url, data, head);
 }
 
+Response	https_post(string url, map<string, string> &data, map<string, string> &head){
+	string up_str;
+	BinaryData up_data;
+	for (auto &i : data){
+		up_str += i.first + "=";
+		up_str += i.second + "&";
+	}
+	up_str.erase(up_str.end() - 1);
+	up_data.append(up_str);
+	return request("POST", url, up_data, head);
+}
+
 
 
 Response	https_send(string method,string url,int port,DWORD flags,BinaryData &data,map<string, string> &head){
@@ -259,7 +271,7 @@ Response	https_send(string method,string url,int port,DWORD flags,BinaryData &da
 		INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
 	auto domain = s2ws(req.domain);
 	//printf("domain:%S", domain.c_str());
-	LPCTSTR lpszServerName = domain.c_str();//"ssl.google-analytics.com"; //设置server
+	LPCTSTR lpszServerName = domain.c_str();
 	INTERNET_PORT nServerPort = port; // HTTPS端口443
 	LPCTSTR lpszUserName = NULL; //无登录用户名
 	LPCTSTR lpszPassword = NULL; //无登录密码
@@ -290,6 +302,7 @@ again:
 	DWORD dwError = 0;
 	auto he = s2ws(req.HeaderToString());
 	printf("https:%S", he.c_str());
+	printf("post data:%s", data.to_string().c_str());
 	if (!HttpSendRequest(hRequest, he.c_str(),method=="GET"? 0:-1,(LPVOID)data.raw_buffer(),data.size()))
 	{
 		dwError = GetLastError();
