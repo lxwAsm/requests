@@ -1,5 +1,5 @@
 #include "http.h"
-
+using namespace requests;
 Response::Response(shared_ptr<BinaryData> rep)
 {
 	int pos = rep->find("\r\n\r\n");
@@ -90,18 +90,29 @@ string	Response::operator[](string key){
 Response::~Response(){
 	
 }
-Request::Request(std::string url, std::string method,map<string, string> &head) :url(url)
+Request::Request(std::string url, std::string method, map<string, string> &head, map<string, string> &options) :url(url)
 {
 	//http://www.baidu.com/hello?jack=123
 	header["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36\r\n";
 	header["Connection"] = "Keep-Alive";
+	map<std::string, std::string> default_options;
+	default_options["timeout"] = "1000";
+	default_options["proxy"] = "";
 	this->method = method;//请求get post delete put
 	if (header.size() > 0){
 		map<string, string>::const_iterator	begin = head.cbegin();
 		for (; begin != head.cend(); begin++){
-			header[begin->first] = begin->second;
+			header[begin->first] = begin->second;//替换默认header的设置
 		}
 	}
+	if (options.size() > 0){
+		map<std::string,std::string>::iterator	begin = options.begin();
+		for (; begin != options.end(); begin++){
+			default_options[begin->first] = begin->second;//替换默认options的设置
+		}
+	}
+	this->timeout = atoi(default_options["timeout"].c_str());
+	this->proxy = default_options["proxy"];
 	int pos = url.find("://");
 	if (pos == -1) return;
 	int end = url.find('/', pos + 3);
@@ -144,7 +155,7 @@ Request::~Request(){
 
 
 
-std::string GetIpByDomainName(const char *szHost)
+std::string requests::GetIpByDomainName(const char *szHost)
 {
 	WSADATA     wsaData;
 	std::string	ip;
@@ -169,7 +180,7 @@ std::string GetIpByDomainName(const char *szHost)
 	return ip;
 }
 
-Response	DoSend(std::string url, map<string, string> &head,string method="GET ",string data=""){
+Response	DoSend(std::string url, map<string, string> &head, string method = "GET ", string data = ""){
 	shared_ptr<BinaryData> pData(new BinaryData(1000));
 	Request	req(url,method,head);
 	try
@@ -218,11 +229,11 @@ Response	Get(std::string url, map<string, string> &head)
 	return https_get(url, head);
 }
 
-Response	Post(std::string url,BinaryData &data, map<string, string> &head){
-	return https_post(url, data, head);
+Response	Post(std::string url, BinaryData &data, map<string, string> &head){
+	return requests::https_post(url, data, head);
 }
 
-Response	request(string method,string url, BinaryData &data,map<string, string> &head){
+Response	requests::request(string method, string url, BinaryData &data, map<string, string> &head, map<string, string> &options){
 	DWORD	flags;
 	if (url.substr(0, 5) == "https"){
 		 flags = INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP |
@@ -233,24 +244,24 @@ Response	request(string method,string url, BinaryData &data,map<string, string> 
 			//设置启用HTTPS
 			INTERNET_FLAG_SECURE |
 			INTERNET_FLAG_RELOAD;
-		return https_send(method, url, INTERNET_DEFAULT_HTTPS_PORT, flags,data, head);
+		return requests::https_send(method, url, INTERNET_DEFAULT_HTTPS_PORT, flags,data, head,options);
 	}
 	else{
 		flags = INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_RELOAD;
-		return https_send(method, url, INTERNET_DEFAULT_HTTP_PORT,flags, data, head);
+		return requests::https_send(method, url, INTERNET_DEFAULT_HTTP_PORT,flags, data, head,options);
 	}
 }
 
-Response https_get(string url, map<string, string> &head){
+Response requests::https_get(string url, map<string, string> &head, map<string, string> &options){
 	BinaryData db;
-	return request("GET", url,db, head); //request函数里面处理http和https
+	return requests::request("GET", url,db, head,options); //request函数里面处理http和https
 }
 
-Response https_post(string url, BinaryData &data,map<string, string> &head){
-	return request("POST", url, data, head);
+Response requests::https_post(string url, BinaryData &data, map<string, string> &head){
+	return requests::request("POST", url, data, head);
 }
 
-Response	https_post(string url, map<string, string> &data, map<string, string> &head){
+Response	requests::https_post(string url, map<string, string> &data, map<string, string> &head){
 	string up_str;
 	BinaryData up_data;
 	for (auto &i : data){
@@ -259,13 +270,13 @@ Response	https_post(string url, map<string, string> &data, map<string, string> &
 	}
 	up_str.erase(up_str.end() - 1);
 	up_data.append(up_str);
-	return request("POST", url, up_data, head);
+	return requests::request("POST", url, up_data, head);
 }
 
 
 
-Response	https_send(string method,string url,int port,DWORD flags,BinaryData &data,map<string, string> &head){
-	Request req(url,method+" ", head);
+Response	requests::https_send(string method, string url, int port, DWORD flags, BinaryData &data, map<string, string> &head, map<string, string> &options){
+	Request req(url,method+" ", head,options);
 	LPCTSTR lpszAgent = L"WinInetGet/0.1";
 	HINTERNET hInternet = InternetOpen(lpszAgent,
 		INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
@@ -299,10 +310,22 @@ Response	https_send(string method,string url,int port,DWORD flags,BinaryData &da
 		dwOpenRequestFlags, dwOpenRequestContext);
 	//发送Request
 again:
+	/*
+	set internet option here
+	*/
+	DWORD dwTimeOut = req.timeout;
+	InternetSetOption(hRequest, INTERNET_OPTION_CONNECT_TIMEOUT, &dwTimeOut, sizeof(dwTimeOut));
+	if (req.proxy.size() > 0){
+		INTERNET_PROXY_INFO proxy_info;
+		proxy_info.dwAccessType = INTERNET_OPEN_TYPE_PROXY;
+		proxy_info.lpszProxy = s2ws(req.proxy).c_str();
+		proxy_info.lpszProxyBypass = s2ws(req.proxy).c_str();
+		InternetSetOption(hRequest, INTERNET_OPTION_PROXY, &proxy_info, sizeof(proxy_info));
+	}
 	DWORD dwError = 0;
 	auto he = s2ws(req.HeaderToString());
-	printf("https:%S", he.c_str());
-	printf("post data:%s", data.to_string().c_str());
+	printf("https:%S\ntimeout:%d\nproxy:%s", he.c_str(),req.timeout,req.proxy.c_str());
+	//printf("post data:%s", data.to_string().c_str());
 	if (!HttpSendRequest(hRequest, he.c_str(),method=="GET"? 0:-1,(LPVOID)data.raw_buffer(),data.size()))
 	{
 		dwError = GetLastError();
@@ -333,9 +356,12 @@ again:
 			pInfoBuffer = (BYTE *)malloc(dwInfoBufferLength + 2);
 		}
 		else {
-			fprintf(stderr, "HttpQueryInfo failed, error = %d (0x%x)/n",
-				GetLastError(), GetLastError());
-			break;
+			shared_ptr<BinaryData> err_info(new BinaryData(500));
+			err_info->append("HttpQueryInfo Timeout");
+			std::string err_header;
+			Response	resp(err_header,err_info);
+			resp.status = 0;
+ 			return resp;
 		}
 	}
 	pInfoBuffer[dwInfoBufferLength] = '/0';

@@ -9,47 +9,51 @@
 #pragma comment(lib,"wininet.lib")
 #pragma comment(lib, "ws2_32.lib")
 using namespace std;
-class Response
-{
-public:
-	Response();
-	Response(shared_ptr<BinaryData> rep);
-	Response(std::string &h,shared_ptr<BinaryData> data);
-	~Response();
-	string	GetText();
-	map<string, string>	Header();
-	const  byte*GetBinary();
-	unsigned int size();
-	string	operator[](string key);
-	unsigned int status;
-private:
-	map<string, string>	header;
-	string	text;
-	shared_ptr<BinaryData>	pContent;
-	void SplitString(const string& s, vector<string>& v, const string& c);
-	unsigned int	status2int(string &s);
-};
+namespace requests{
+	class Response
+	{
+	public:
+		Response();
+		Response(std::shared_ptr<BinaryData> rep);
+		Response(std::string &h, std::shared_ptr<BinaryData> data);
+		~Response();
+		std::string	GetText();
+		map<std::string,std::string>	Header();
+		const  byte*GetBinary();
+		unsigned int size();
+		std::string	operator[](std::string key);
+		unsigned int status;
+	private:
+		map<std::string,std::string>	header;
+		std:: string	text;
+		std::shared_ptr<BinaryData>	pContent;
+		void SplitString(const string& s, vector<string>& v, const string& c);
+		unsigned int	status2int(string &s);
+	};
 
-class Request
-{
-public:
-	Request(std::string url,std::string method,map<string, string> &header = map<string, string>());
-	~Request();
-	string	HeaderToString();
-	string  GetRequest(const string &data);
-	std::string	url;
-	std::string	domain;
-	std::string param;
-	map<string, string>	header;
-	int	port;
-	std::string method;
-};
+	class Request
+	{
+	public:
+		Request(std::string url, std::string method, map<string, string> &header = map<string, string>(), map<string, string> &options = map<string, string>());
+		~Request();
+		string	HeaderToString();
+		string  GetRequest(const string &data);
+		std::string	url;
+		std::string	domain;
+		std::string param;
+		unsigned int timeout;
+		std::string proxy;
+		map<string, string>	header;
+		int	port;
+		std::string method;
+	};
 
-std::string GetIpByDomainName(const char *szHost);
-Response	Get(std::string url, const map<string,string> &head = map<string,string>());
-Response	Post(std::string url, const string &data,map<string, string> &head = map<string, string>());
-Response    https_get(string url,map<string, string> &head = map<string, string>());
-Response	https_post(string url, BinaryData &data,map<string, string> &head = map<string, string>());
-Response	https_post(string url, map<string,string> &data,map<string, string> &head = map<string, string>());
-Response	request(string method,string url, BinaryData &data,map<string, string> &head = map<string, string>());
-Response	https_send(string method, string url,int port,DWORD flags,BinaryData &data,map<string, string> &head = map<string, string>());
+	std::string GetIpByDomainName(const char *szHost);
+	Response	Get(std::string url, const map<string, string> &head = map<string, string>());
+	Response	Post(std::string url, const string &data, map<string, string> &head = map<string, string>());
+	Response    https_get(string url, map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
+	Response	https_post(string url, BinaryData &data, map<string, string> &head = map<string, string>());
+	Response	https_post(string url, map<string, string> &data, map<string, string> &head = map<string, string>());
+	Response	request(string method, string url, BinaryData &data, map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
+	Response	https_send(string method, string url, int port, DWORD flags, BinaryData &data, map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
+}
