@@ -2,7 +2,7 @@
 #define BD
 #include <string>
 #include <vector>
-typedef unsigned char byte;
+typedef unsigned char byte;//
 namespace requests{
 	class BinaryData
 	{

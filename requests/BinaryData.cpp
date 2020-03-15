@@ -1,5 +1,5 @@
 #include "BinaryData.h"
-using namespace requests;
+using namespace requests;//
 BinaryData::BinaryData()
 {
 	

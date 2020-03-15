@@ -23,6 +23,7 @@ std::string ws2s(const std::wstring& ws)
 	delete[]_Dest;
 	setlocale(LC_ALL, curLocale.c_str());
 	return result;
-}
+}//
+
 
 

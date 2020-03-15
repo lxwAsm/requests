@@ -14,11 +14,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 	map<string, string> header;
 	map<string, string> options;
-	options["timeout"] = "3000";
-	options["proxy"] = "222.240.184.126:8086";
+	//options["timeout"] = "3000";
+	//options["proxy"] = "222.240.184.126:8086";
 	int a;
-	Response rep = https_get("https://blog.csdn.net/charlessimonyi/article/details/9706523",header,options);
-	cout << rep["status"] << endl;
+	Response rep = Get("http://47.106.162.182:8080/112358.php",header,options);
+	cout << rep["cookies"] << endl;
 	cout << rep.GetText() << endl;
 	cout << rep.status << endl;
 	cout << "-----------------------" << endl;

@@ -116,14 +116,24 @@ Request::Request(std::string url, std::string method, map<string, string> &head,
 	int pos = url.find("://");
 	if (pos == -1) return;
 	int end = url.find('/', pos + 3);
-	if (end == -1){
+	if (end == -1){//没有参数
+
 		domain = url.substr(pos + 3);
 		port = 80;
 		param = "/";
 	}
-	else{
-		domain = url.substr(pos + 3, end - pos - 3);
-		port = 80;
+	else{//有请求参数
+		std::string domain_port = url.substr(pos + 3, end - pos - 3);
+		int port_pos = domain_port.find(":");
+		if (port_pos!= -1){//不是默认端口
+			domain = domain_port.substr(0, port_pos);
+			port = atoi(domain_port.substr(port_pos + 1).c_str());
+		}
+		else{
+			port = 80;
+			domain = domain_port;
+		}
+		
 		param = url.substr(end);
 	}
 }
@@ -224,13 +234,13 @@ Response	DoSend(std::string url, map<string, string> &head, string method = "GET
 	return Response(pData);
 
 }
-Response	Get(std::string url, map<string, string> &head)
+Response	requests::Get(std::string url, map<string, string> &head, map<string, string> &options)
 {
-	return https_get(url, head);
+	return https_get(url, head,options);
 }
 
-Response	Post(std::string url, BinaryData &data, map<string, string> &head){
-	return requests::https_post(url, data, head);
+Response	requests::Post(std::string url, BinaryData &data, map<string, string> &head, map<string, string> &options){
+	return requests::https_post(url, data, head,options);
 }
 
 Response	requests::request(string method, string url, BinaryData &data, map<string, string> &head, map<string, string> &options){
@@ -257,11 +267,11 @@ Response requests::https_get(string url, map<string, string> &head, map<string, 
 	return requests::request("GET", url,db, head,options); //request函数里面处理http和https
 }
 
-Response requests::https_post(string url, BinaryData &data, map<string, string> &head){
-	return requests::request("POST", url, data, head);
+Response requests::https_post(string url, BinaryData &data, map<string, string> &head, map<string, string> &options){
+	return requests::request("POST", url, data, head,options);
 }
 
-Response	requests::https_post(string url, map<string, string> &data, map<string, string> &head){
+Response	requests::https_post(string url, map<string, string> &data, map<string, string> &head, map<string, string> &options){
 	string up_str;
 	BinaryData up_data;
 	for (auto &i : data){
@@ -283,7 +293,7 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 	auto domain = s2ws(req.domain);
 	//printf("domain:%S", domain.c_str());
 	LPCTSTR lpszServerName = domain.c_str();
-	INTERNET_PORT nServerPort = port; // HTTPS端口443
+	INTERNET_PORT nServerPort = req.port; // HTTPS端口443
 	LPCTSTR lpszUserName = NULL; //无登录用户名
 	LPCTSTR lpszPassword = NULL; //无登录密码
 	DWORD dwConnectFlags = 0;
