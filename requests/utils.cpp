@@ -24,6 +24,11 @@ std::string ws2s(const std::wstring& ws)
 	setlocale(LC_ALL, curLocale.c_str());
 	return result;
 }//
-
+std::string to_lower(std::string s){
+	std::string ret;
+	ret.resize(s.size());
+	transform(s.begin(), s.end(), ret.begin(), tolower);
+	return ret;
+}
 
 

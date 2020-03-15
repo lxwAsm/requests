@@ -245,7 +245,7 @@ Response	requests::Post(std::string url, BinaryData &data, map<string, string> &
 
 Response	requests::request(string method, string url, BinaryData &data, map<string, string> &head, map<string, string> &options){
 	DWORD	flags;
-	if (url.substr(0, 5) == "https"){
+	if (to_lower(url.substr(0, 6)) == "https:"){
 		 flags = INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP |
 			INTERNET_FLAG_KEEP_CONNECTION |
 			INTERNET_FLAG_NO_AUTH |

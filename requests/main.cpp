@@ -17,7 +17,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//options["timeout"] = "3000";
 	//options["proxy"] = "222.240.184.126:8086";
 	int a;
-	Response rep = Get("http://47.106.162.182:8080/112358.php",header,options);
+	Response rep = Get("HTTPS://img12.360buyimg.com/n1/s450x450_jfs/t1/48975/24/16741/337144/5de0913eE206334a5/32c2af4c117024c3.jpg",header,options);
 	cout << rep["cookies"] << endl;
 	cout << rep.GetText() << endl;
 	cout << rep.status << endl;
