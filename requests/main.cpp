@@ -17,11 +17,14 @@ int _tmain(int argc, _TCHAR* argv[])
 	//options["timeout"] = "3000";
 	//options["proxy"] = "222.240.184.126:8086";
 	int a;
-	Response rep = Get("HTTPS://img12.360buyimg.com/n1/s450x450_jfs/t1/48975/24/16741/337144/5de0913eE206334a5/32c2af4c117024c3.jpg",header,options);
+	Base64	base64;
+	const unsigned char* str = (const unsigned char*)"hello";
+	cout << base64.Encode(str, 5) << endl;
+	/*Response rep = Get("HTTPS://img12.360buyimg.com/n1/s450x450_jfs/t1/48975/24/16741/337144/5de0913eE206334a5/32c2af4c117024c3.jpg",header,options);
 	cout << rep["cookies"] << endl;
 	cout << rep.GetText() << endl;
 	cout << rep.status << endl;
-	cout << "-----------------------" << endl;
+	cout << "-----------------------" << endl;*/
 	//cout << "---------HTTPS----------" << endl;
 	/*Response bin = https_get("https://img12.360buyimg.com/n1/s450x450_jfs/t1/48975/24/16741/337144/5de0913eE206334a5/32c2af4c117024c3.jpg");
 	auto header = bin.Header();
