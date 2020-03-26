@@ -23,9 +23,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	//options["proxy"] = "222.240.184.126:8086";
 	int a;
 
-	Response resp = Post("http://47.106.162.182:8080/save.php",data,files);
+	cout << md5("12345") << endl;
+	/*Response resp = Post("http://47.106.162.182:8080/save.php",data,files);
 	cout << resp.status << endl;
-	cout << resp.GetText() << endl;
+	cout << resp.GetText() << endl;*/
 	//cout << "---------HTTPS----------" << endl;
 	/*Response bin = https_get("https://img12.360buyimg.com/n1/s450x450_jfs/t1/48975/24/16741/337144/5de0913eE206334a5/32c2af4c117024c3.jpg");
 	auto header = bin.Header();
