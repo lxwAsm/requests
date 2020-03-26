@@ -14,17 +14,18 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 	map<string, string> header;
 	map<string, string> options;
+	map<string, string> data;
+	map<string, string> files;
 	//options["timeout"] = "3000";
+	data["key"] = "letmeupload";
+	data["submit"] = "Submit";
+	files["file"] = "C:\\Users\\jack\\Desktop\\stdafx.h";
 	//options["proxy"] = "222.240.184.126:8086";
 	int a;
-	Base64	base64;
-	const unsigned char* str = (const unsigned char*)"hello";
-	cout << base64.Encode(str, 5) << endl;
-	/*Response rep = Get("HTTPS://img12.360buyimg.com/n1/s450x450_jfs/t1/48975/24/16741/337144/5de0913eE206334a5/32c2af4c117024c3.jpg",header,options);
-	cout << rep["cookies"] << endl;
-	cout << rep.GetText() << endl;
-	cout << rep.status << endl;
-	cout << "-----------------------" << endl;*/
+
+	Response resp = Post("http://47.106.162.182:8080/save.php",data,files);
+	cout << resp.status << endl;
+	cout << resp.GetText() << endl;
 	//cout << "---------HTTPS----------" << endl;
 	/*Response bin = https_get("https://img12.360buyimg.com/n1/s450x450_jfs/t1/48975/24/16741/337144/5de0913eE206334a5/32c2af4c117024c3.jpg");
 	auto header = bin.Header();

@@ -15,7 +15,7 @@ public:
 	DataByte
 	[in]输入的数据长度,以字节为单位
 	*/
-	std::string Encode(const unsigned char* Data, int DataByte);
+	std::string Encode(char* Data, int DataByte);
 	/*解码
 	DataByte
 	[in]输入的数据长度,以字节为单位

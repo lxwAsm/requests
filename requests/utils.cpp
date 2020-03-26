@@ -2,12 +2,14 @@
 
 std::wstring s2ws(const std::string& str)
 {
-	int num = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
-	wchar_t *wide = new wchar_t[num];
-	MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, wide, num);
-	std::wstring w_str(wide);
-	delete[] wide;
-	return w_str;
+	std::wstring result; 
+	int len = MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size(), NULL, 0);
+	TCHAR* buffer = new TCHAR[len + 1];
+	MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size(), buffer, len);
+	buffer[len] = '\0';         
+	result.append(buffer);
+	delete[] buffer;
+	return result;
 }
 
 std::string ws2s(const std::wstring& ws)
@@ -31,7 +33,7 @@ std::string to_lower(std::string s){
 	return ret;
 }
 
-std::string Base64::Encode(const unsigned char* Data, int DataByte)
+std::string Base64::Encode(char* Data, int DataByte)
 {
 	//±àÂë±í
 	const char EncodeTable[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
