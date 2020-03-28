@@ -326,9 +326,9 @@ Response	requests::https_post(string url, map<string, string> &data, map<string,
 		for (auto &i : data){
 			up_str += i.first + "=";
 			up_str += i.second + "&";
-			up_str.erase(up_str.end() - 1);
-			up_data.append(up_str);
 		}
+		up_str.erase(up_str.end() - 1);
+		up_data.append(up_str);
 	}
 	return requests::request("POST", url, up_data, head);
 }
