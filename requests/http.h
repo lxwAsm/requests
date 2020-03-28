@@ -48,14 +48,21 @@ namespace requests{
 		int	port;
 		std::string method;
 	};
-
+	class Session{
+	public:
+		~Session();
+		Response	Get(std::string url, map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
+		Response	Post(std::string url, map<string, string> &data, map<string, string> files = map<string, string>(), map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
+		Response	Post(std::string url, BinaryData &data, map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
+		map<std::string, std::string> cookies;
+	};
 	std::string GetIpByDomainName(const char *szHost);
-	Response	Get(std::string url, map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
+	Response	Get(std::string url, map<string, string> &head = map<string, string>(),std::string cookie="", map<string, string> &options = map<string, string>());
 	Response	Post(std::string url, map<string, string> &data, map<string, string> files = map<string, string>(), map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
 	Response	Post(std::string url, BinaryData &data, map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
-	Response    https_get(string url, map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
+	Response    https_get(string url, map<string, string> &head = map<string, string>(),std::string cookie="", map<string, string> &options = map<string, string>());
 	Response	https_post(string url, BinaryData &data, map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
 	Response	https_post(string url, map<string, string> &data, map<string, string> files, map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
-	Response	request(string method, string url, BinaryData &data, map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
-	Response	https_send(string method, string url, int port, DWORD flags, BinaryData &data, map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
+	Response	request(string method, string url, BinaryData &data, map<string, string> &head = map<string, string>(),std::string cookie="", map<string, string> &options = map<string, string>());
+	Response	https_send(string method, string url, int port, DWORD flags, BinaryData &data, map<string, string> &head = map<string, string>(),std::string cookie="", map<string, string> &options = map<string, string>());
 }

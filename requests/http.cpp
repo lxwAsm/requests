@@ -102,6 +102,7 @@ Request::Request(std::string url, std::string method, map<string, string> &head,
 	if (header.size() > 0){
 		map<string, string>::const_iterator	begin = head.cbegin();
 		for (; begin != head.cend(); begin++){
+			//cookie用InternetSetCookie设置
 			header[begin->first] = begin->second;//替换默认header的设置
 		}
 	}
@@ -134,7 +135,12 @@ Request::Request(std::string url, std::string method, map<string, string> &head,
 			port = atoi(domain_port.substr(port_pos + 1).c_str());
 		}
 		else{
-			port = 80;
+			if (url.substr(0, 5) == "http:"){
+				port = 80;
+			}
+			else{
+				port = 443;
+			}
 			domain = domain_port;
 		}
 		
@@ -241,9 +247,9 @@ Response	DoSend(std::string url, map<string, string> &head, string method = "GET
 	return Response(pData);
 
 }
-Response	requests::Get(std::string url, map<string, string> &head, map<string, string> &options)
+Response	requests::Get(std::string url, map<string, string> &head,std::string cookie, map<string, string> &options)
 {
-	return https_get(url, head,options);
+	return https_get(url, head,cookie,options);
 }
 
 Response	requests::Post(std::string url, BinaryData &data, map<string, string> &head, map<string, string> &options){
@@ -254,7 +260,7 @@ Response requests::Post(string url, map<string, string> &data,map<string,string>
 	return https_post(url,data,files,head,options);
 }
 
-Response	requests::request(string method, string url, BinaryData &data, map<string, string> &head, map<string, string> &options){
+Response	requests::request(string method, string url, BinaryData &data, map<string, string> &head,std::string cookie, map<string, string> &options){
 	DWORD	flags;
 	if (to_lower(url.substr(0, 6)) == "https:"){
 		 flags = INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP |
@@ -265,21 +271,21 @@ Response	requests::request(string method, string url, BinaryData &data, map<stri
 			//设置启用HTTPS
 			INTERNET_FLAG_SECURE |
 			INTERNET_FLAG_RELOAD;
-		return requests::https_send(method, url, INTERNET_DEFAULT_HTTPS_PORT, flags,data, head,options);
+		return requests::https_send(method, url, INTERNET_DEFAULT_HTTPS_PORT, flags,data, head,cookie,options);
 	}
 	else{
 		flags = INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_RELOAD;
-		return requests::https_send(method, url, INTERNET_DEFAULT_HTTP_PORT,flags, data, head,options);
+		return requests::https_send(method, url, INTERNET_DEFAULT_HTTP_PORT,flags, data, head,cookie,options);
 	}
 }
 
-Response requests::https_get(string url, map<string, string> &head, map<string, string> &options){
+Response requests::https_get(string url, map<string, string> &head,std::string cookie, map<string, string> &options){
 	BinaryData db;
-	return requests::request("GET", url,db, head,options); //request函数里面处理http和https
+	return requests::request("GET", url,db, head,cookie,options); //request函数里面处理http和https
 }
 
 Response requests::https_post(string url, BinaryData &data, map<string, string> &head, map<string, string> &options){
-	return requests::request("POST", url, data, head,options);
+	return requests::request("POST", url, data, head,"",options);
 }
 
 Response	requests::https_post(string url, map<string, string> &data, map<string, string> files, map<string, string> &head, map<string, string> &options){
@@ -328,7 +334,7 @@ Response	requests::https_post(string url, map<string, string> &data, map<string,
 }
 
 
-Response	requests::https_send(string method, string url, int port, DWORD flags, BinaryData &data, map<string, string> &head, map<string, string> &options){
+Response	requests::https_send(string method, string url, int port, DWORD flags, BinaryData &data, map<string, string> &head,std::string cookie, map<string, string> &options){
 	Request req(url,method+" ", head,options);
 	LPCTSTR lpszAgent = L"WinInetGet/0.1";
 	HINTERNET hInternet = InternetOpen(lpszAgent,
@@ -380,6 +386,20 @@ again:
 		proxy_info.lpszProxy = s2ws(req.proxy).c_str();
 		proxy_info.lpszProxyBypass = s2ws(req.proxy).c_str();
 		InternetSetOption(hRequest, INTERNET_OPTION_PROXY, &proxy_info, sizeof(proxy_info));
+	}
+	//Set Cookies Header
+	if (cookie.size()>0){
+		vector<string> name_value = SplitString(cookie, ";");
+		for (std::string v : name_value){
+			int pos = v.find("=");
+			if (pos == -1) continue;
+			std::string name = s_trim(v.substr(0, pos));
+			std::string value = s_trim(v.substr(pos + 1));
+			if (InternetSetCookieA(("https://" + req.domain).c_str(), name.c_str(),value.c_str())){
+				printf("Cookies Add Ok");
+			}
+		}
+		
 	}
 	req.SetPostHeader(data);
 	DWORD dwError = 0;
@@ -447,6 +467,10 @@ again:
 		content->append(pMessageBody, dwBytesRead);
 		free(pMessageBody);
 	}
+	//Free handles
+	//CloseHandle(hRequest);
+	//CloseHandle(hConnect);
+	//CloseHandle(hInternet);
 	auto h = ws2s(header);
 	Response rep(h, content);
 	return rep;

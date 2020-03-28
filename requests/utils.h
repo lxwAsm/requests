@@ -2,6 +2,9 @@
 #define utils996
 #include <string>
 #include <algorithm>
+#include <cctype>
+#include <functional>
+#include <vector>
 #include <Windows.h>//
 
 std::wstring s2ws(const std::string& str);
@@ -68,4 +71,9 @@ private:
 };
 
 std::string md5(const std::string str);
+std::vector<std::string> SplitString(const std::string& s, const std::string& c);
+
+static inline std::string &ltrim(std::string &s);
+static inline std::string &rtrim(std::string &s);
+std::string &s_trim(std::string &s);
 #endif
