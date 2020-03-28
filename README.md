@@ -16,3 +16,12 @@
 >Response resp = Get("https://pan.baidu.com/disk/home",header,cookie);  
 >cout << resp.GetText() << endl;  
 
+### 自定义Http Header
+>map<string, string> header;  
+>header["name"] = "cpp";  
+>header["age"] = "14";
+>header["User-Agent"] = "Unknown Brower"  
+>Response resp = Get("http://47.106.162.182:8080/header.php",header);  
+>cout << resp.status << endl;  
+>cout << resp.GetText() << endl;  
+
