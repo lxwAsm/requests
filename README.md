@@ -1,3 +1,4 @@
+>关闭预编译头：项目->属性->C/C++->预编译头->不使用预编译头
 ### 入门
 >#include \<iostream>  
 >#include \<string>  
