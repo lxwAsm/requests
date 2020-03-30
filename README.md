@@ -1,3 +1,16 @@
+### 入门
+>#include \<iostream>  
+>#include \<string>  
+>#include "http.h"  
+>using	namespace std;  
+>using	namespace requests;  
+>int _tmain(int argc, _TCHAR* argv[])  
+>{  
+>&nbsp;&nbsp;&nbsp;&nbsp;Response resp = Get("https://baidu.com");  
+>&nbsp;&nbsp;&nbsp;&nbsp;cout << resp.status << endl;  
+>&nbsp;&nbsp;&nbsp;&nbsp;cout << resp.GetText() << endl;  
+>&nbsp;&nbsp;&nbsp;&nbsp;return 0;  
+> }  
 ### Get获取网页内容
 >Response resp = Get("https://pan.baidu.com/disk/home");  
 >cout << resp.GetText() << endl; `
@@ -15,7 +28,6 @@
 >string cookie = "BAIDUID=B066E871294A61BE394DE24FFA475653:FG=1; BIDUPSID=B066E871294A61BE9EF72E101F79BF87; PSTM=1578882286;";  
 >Response resp = Get("https://pan.baidu.com/disk/home",header,cookie);  
 >cout << resp.GetText() << endl;  
-
 ### 自定义Http Header
 >map<string, string> header;  
 >header["name"] = "cpp";  
@@ -24,4 +36,3 @@
 >Response resp = Get("http://47.106.162.182:8080/header.php",header);  
 >cout << resp.status << endl;  
 >cout << resp.GetText() << endl;  
-
