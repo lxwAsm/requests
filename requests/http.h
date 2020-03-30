@@ -45,6 +45,7 @@ namespace requests{
 		std::string	url;
 		std::string	domain;
 		std::string param;
+		std::string prefix;
 		unsigned int timeout;
 		std::string proxy;
 		map<string, string>	header;

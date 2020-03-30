@@ -31,7 +31,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	header["User-Agent"] = "XiaoMi Brower";
 	BinaryData post_data;
 	post_data.append("PostData");
-	Response resp = Post("http://47.106.162.182:8080/header.php",post_data,header,cookie);
+	Response resp = Post("47.106.162.182:8080/header.php",post_data,header,cookie);
 	cout << resp.status << endl;
 	cout << resp.GetText() << endl;
 	//cout << "---------HTTPS----------" << endl;

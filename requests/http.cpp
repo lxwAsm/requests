@@ -114,7 +114,14 @@ Request::Request(std::string url, std::string method, map<string, string> &head,
 	this->timeout = atoi(default_options["timeout"].c_str());
 	this->proxy = default_options["proxy"];
 	int pos = url.find("://");
-	if (pos == -1) return;
+	if (pos == -1){
+		url.insert(0, "http://");
+		this->prefix = "http://";
+		pos = url.find("://");
+	}
+	else{
+		this->prefix = url.substr(0,pos+3);
+	}
 	int end = url.find('/', pos + 3);
 	if (end == -1){//没有参数
 		domain = url.substr(pos + 3);
@@ -394,7 +401,7 @@ again:
 			if (pos == -1) continue;
 			std::string name = s_trim(v.substr(0, pos));
 			std::string value = s_trim(v.substr(pos + 1));
-			if (InternetSetCookieA(("https://" + req.domain).c_str(), name.c_str(),value.c_str())){
+			if (InternetSetCookieA((req.prefix + req.domain).c_str(), name.c_str(),value.c_str())){
 				//printf("Cookies Add Ok");
 			}
 		}
