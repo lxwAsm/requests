@@ -93,13 +93,13 @@ Response::~Response(){
 Request::Request(std::string url, std::string method, map<string, string> &head, map<string, string> &options) :url(url)
 {
 	//http://www.baidu.com/hello?jack=123
-	header["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36\r\n";
+	header["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36";
 	header["Connection"] = "Keep-Alive";
 	map<std::string, std::string> default_options;
-	default_options["timeout"] = "1000";
+	default_options["timeout"] = "3000";
 	default_options["proxy"] = "";
 	this->method = method;//请求get post delete put
-	if (header.size() > 0){
+	if (head.size() > 0){
 		map<string, string>::const_iterator	begin = head.cbegin();
 		for (; begin != head.cend(); begin++){
 			header[begin->first] = begin->second;//替换默认header的设置
@@ -117,9 +117,13 @@ Request::Request(std::string url, std::string method, map<string, string> &head,
 	if (pos == -1) return;
 	int end = url.find('/', pos + 3);
 	if (end == -1){//没有参数
-
 		domain = url.substr(pos + 3);
-		port = 80;
+		if (url.substr(0, 5) == "http:"){
+			port = 80;
+		}
+		else{
+			port = 443;
+		}
 		param = "/";
 	}
 	else{//有请求参数
@@ -130,21 +134,29 @@ Request::Request(std::string url, std::string method, map<string, string> &head,
 			port = atoi(domain_port.substr(port_pos + 1).c_str());
 		}
 		else{
-			port = 80;
+			if (url.substr(0, 5) == "http:"){
+				port = 80;
+			}
+			else{
+				port = 443;
+			}
 			domain = domain_port;
 		}
 		
 		param = url.substr(end);
 	}
 }
-string  Request::GetRequest(const string &data){
+void  Request::SetPostHeader(BinaryData &data){
 	if (method == "POST "){
-		header["Content-Length"] = to_string(data.size()+2);
-		header["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+		header["Content-Length"] = to_string(data.size());
+		if (data.find("--216378052142052079582464804396") != -1){
+			header["Content-Type"] = "multipart/form-data; boundary=---------------------------216378052142052079582464804396";
+		}
+		else{
+			header["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+		}
+		
 	}
-	return method + param + " HTTP/1.1\r\n"
-			"host:" + domain + "\r\n" + HeaderToString()+data;
-	
 }
 
 string Request::HeaderToString(){
@@ -207,7 +219,7 @@ Response	DoSend(std::string url, map<string, string> &head, string method = "GET
 		int errNo = connect(clientSocket, (sockaddr*)&ServerAddr, sizeof(ServerAddr));
 		if (errNo == 0)
 		{
-			string strSend = req.GetRequest(data);//with post data
+			string strSend = "";//with post data
 			printf(strSend.c_str());
 			errNo = send(clientSocket, strSend.c_str(), strSend.length(), 0);
 			if (errNo > 0)
@@ -234,16 +246,20 @@ Response	DoSend(std::string url, map<string, string> &head, string method = "GET
 	return Response(pData);
 
 }
-Response	requests::Get(std::string url, map<string, string> &head, map<string, string> &options)
+Response	requests::Get(std::string url, map<string, string> &head,std::string cookie, map<string, string> &options)
 {
-	return https_get(url, head,options);
+	return https_get(url, head,cookie,options);
 }
 
-Response	requests::Post(std::string url, BinaryData &data, map<string, string> &head, map<string, string> &options){
-	return requests::https_post(url, data, head,options);
+Response	requests::Post(std::string url, BinaryData &data, map<string, string> &head, std::string cookie,map<string, string> &options){
+	return requests::https_post(url, data, head,cookie,options);
 }
 
-Response	requests::request(string method, string url, BinaryData &data, map<string, string> &head, map<string, string> &options){
+Response requests::Post(string url, map<string, string> &data,map<string,string> files, map<string, string> &head,std::string cookie, map<string, string> &options){
+	return https_post(url,data,files,head,cookie,options);
+}
+
+Response	requests::request(string method, string url, BinaryData &data, map<string, string> &head,std::string cookie, map<string, string> &options){
 	DWORD	flags;
 	if (to_lower(url.substr(0, 6)) == "https:"){
 		 flags = INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP |
@@ -254,38 +270,70 @@ Response	requests::request(string method, string url, BinaryData &data, map<stri
 			//设置启用HTTPS
 			INTERNET_FLAG_SECURE |
 			INTERNET_FLAG_RELOAD;
-		return requests::https_send(method, url, INTERNET_DEFAULT_HTTPS_PORT, flags,data, head,options);
+		return requests::https_send(method, url, INTERNET_DEFAULT_HTTPS_PORT, flags,data, head,cookie,options);
 	}
 	else{
 		flags = INTERNET_FLAG_NO_CACHE_WRITE | INTERNET_FLAG_RELOAD;
-		return requests::https_send(method, url, INTERNET_DEFAULT_HTTP_PORT,flags, data, head,options);
+		return requests::https_send(method, url, INTERNET_DEFAULT_HTTP_PORT,flags, data, head,cookie,options);
 	}
 }
 
-Response requests::https_get(string url, map<string, string> &head, map<string, string> &options){
+Response requests::https_get(string url, map<string, string> &head,std::string cookie, map<string, string> &options){
 	BinaryData db;
-	return requests::request("GET", url,db, head,options); //request函数里面处理http和https
+	return requests::request("GET", url,db, head,cookie,options); //request函数里面处理http和https
 }
 
-Response requests::https_post(string url, BinaryData &data, map<string, string> &head, map<string, string> &options){
-	return requests::request("POST", url, data, head,options);
+Response requests::https_post(string url, BinaryData &data, map<string, string> &head,std::string cookie, map<string, string> &options){
+	return requests::request("POST", url, data, head,cookie,options);
 }
 
-Response	requests::https_post(string url, map<string, string> &data, map<string, string> &head, map<string, string> &options){
+Response	requests::https_post(string url, map<string, string> &data, map<string, string> files, map<string, string> &head,std::string cookie,  map<string, string> &options){
 	string up_str;
 	BinaryData up_data;
-	for (auto &i : data){
-		up_str += i.first + "=";
-		up_str += i.second + "&";
+	if (files.size() > 0){//要上传文件，加boundary
+		for (auto &f : files){
+			up_data.append("-----------------------------216378052142052079582464804396\r\n");
+			int pos = f.second.rfind("\\");
+			std::string filename;
+			if (pos != -1){
+				filename = f.second.substr(pos + 1);
+			}
+			else{
+				filename = f.second;
+			}
+			up_data.append("Content-Disposition: form-data; name=\"" + f.first + "\"" + "; filename=\"" + filename + "\"\r\n");
+			up_data.append("Content-Type: text/x-python-script\r\n\r\n");
+			char * buffer;
+			long size;
+			ifstream in(filename, ios::in | ios::binary | ios::ate);
+			size = in.tellg();
+			in.seekg(0, ios::beg);
+			buffer = new char[size];
+			in.read(buffer, size);
+			in.close();
+			up_data.append((byte*)buffer, size);
+			delete[] buffer;
+		}
+		for (auto &i : data){
+			up_data.append("\r\n-----------------------------216378052142052079582464804396\r\n");
+			up_data.append("Content-Disposition: form-data; name=\""+i.first+"\"\r\n\r\n");
+			up_data.append(i.second);
+		}
+		up_data.append("\r\n-----------------------------216378052142052079582464804396--");
 	}
-	up_str.erase(up_str.end() - 1);
-	up_data.append(up_str);
-	return requests::request("POST", url, up_data, head);
+	else{
+		for (auto &i : data){
+			up_str += i.first + "=";
+			up_str += i.second + "&";
+		}
+		up_str.erase(up_str.end() - 1);
+		up_data.append(up_str);
+	}
+	return requests::request("POST", url, up_data, head,cookie,options);
 }
 
 
-
-Response	requests::https_send(string method, string url, int port, DWORD flags, BinaryData &data, map<string, string> &head, map<string, string> &options){
+Response	requests::https_send(string method, string url, int port, DWORD flags, BinaryData &data, map<string, string> &head,std::string cookie, map<string, string> &options){
 	Request req(url,method+" ", head,options);
 	LPCTSTR lpszAgent = L"WinInetGet/0.1";
 	HINTERNET hInternet = InternetOpen(lpszAgent,
@@ -305,7 +353,13 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 		INTERNET_SERVICE_HTTP,
 		dwConnectFlags, dwConnectContext);
 	//使用Get
-	LPCTSTR lpszVerb = s2ws(method).c_str();
+	LPCTSTR lpszVerb=NULL;
+	if (req.method == "GET "){
+		lpszVerb = L"GET";
+	}
+	if (req.method == "POST "){
+		lpszVerb = L"POST";
+	}
 	auto param = s2ws(req.param);
 	//printf("param:%S", param.c_str());
 	LPCTSTR lpszObjectName = param.c_str();
@@ -332,11 +386,26 @@ again:
 		proxy_info.lpszProxyBypass = s2ws(req.proxy).c_str();
 		InternetSetOption(hRequest, INTERNET_OPTION_PROXY, &proxy_info, sizeof(proxy_info));
 	}
+	//Set Cookies Header
+ 	if (cookie.size()>0){
+		vector<string> name_value = SplitString(cookie, ";");
+		for (std::string v : name_value){
+			int pos = v.find("=");
+			if (pos == -1) continue;
+			std::string name = s_trim(v.substr(0, pos));
+			std::string value = s_trim(v.substr(pos + 1));
+			if (InternetSetCookieA(("https://" + req.domain).c_str(), name.c_str(),value.c_str())){
+				//printf("Cookies Add Ok");
+			}
+		}
+		
+	}
+	req.SetPostHeader(data);
 	DWORD dwError = 0;
 	auto he = s2ws(req.HeaderToString());
-	printf("https:%S\ntimeout:%d\nproxy:%s", he.c_str(),req.timeout,req.proxy.c_str());
+	printf("https:%S\ntimeout:%d\nproxy:%s\n%s", he.c_str(),req.timeout,req.proxy.c_str(),data.to_string().c_str());
 	//printf("post data:%s", data.to_string().c_str());
-	if (!HttpSendRequest(hRequest, he.c_str(),method=="GET"? 0:-1,(LPVOID)data.raw_buffer(),data.size()))
+	if (!HttpSendRequest(hRequest, he.c_str(),he.size(),(LPVOID)data.raw_buffer(),data.size()))
 	{
 		dwError = GetLastError();
 	}
@@ -397,6 +466,10 @@ again:
 		content->append(pMessageBody, dwBytesRead);
 		free(pMessageBody);
 	}
+	//Free handles
+	InternetCloseHandle(hRequest);
+	InternetCloseHandle(hConnect);
+	InternetCloseHandle(hInternet);
 	auto h = ws2s(header);
 	Response rep(h, content);
 	return rep;
