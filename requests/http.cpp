@@ -93,16 +93,15 @@ Response::~Response(){
 Request::Request(std::string url, std::string method, map<string, string> &head, map<string, string> &options) :url(url)
 {
 	//http://www.baidu.com/hello?jack=123
-	header["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36\r\n";
+	header["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36";
 	header["Connection"] = "Keep-Alive";
 	map<std::string, std::string> default_options;
 	default_options["timeout"] = "3000";
 	default_options["proxy"] = "";
 	this->method = method;//请求get post delete put
-	if (header.size() > 0){
+	if (head.size() > 0){
 		map<string, string>::const_iterator	begin = head.cbegin();
 		for (; begin != head.cend(); begin++){
-			//cookie用InternetSetCookie设置
 			header[begin->first] = begin->second;//替换默认header的设置
 		}
 	}
@@ -252,12 +251,12 @@ Response	requests::Get(std::string url, map<string, string> &head,std::string co
 	return https_get(url, head,cookie,options);
 }
 
-Response	requests::Post(std::string url, BinaryData &data, map<string, string> &head, map<string, string> &options){
-	return requests::https_post(url, data, head,options);
+Response	requests::Post(std::string url, BinaryData &data, map<string, string> &head, std::string cookie,map<string, string> &options){
+	return requests::https_post(url, data, head,cookie,options);
 }
 
-Response requests::Post(string url, map<string, string> &data,map<string,string> files, map<string, string> &head, map<string, string> &options){
-	return https_post(url,data,files,head,options);
+Response requests::Post(string url, map<string, string> &data,map<string,string> files, map<string, string> &head,std::string cookie, map<string, string> &options){
+	return https_post(url,data,files,head,cookie,options);
 }
 
 Response	requests::request(string method, string url, BinaryData &data, map<string, string> &head,std::string cookie, map<string, string> &options){
@@ -284,11 +283,11 @@ Response requests::https_get(string url, map<string, string> &head,std::string c
 	return requests::request("GET", url,db, head,cookie,options); //request函数里面处理http和https
 }
 
-Response requests::https_post(string url, BinaryData &data, map<string, string> &head, map<string, string> &options){
-	return requests::request("POST", url, data, head,"",options);
+Response requests::https_post(string url, BinaryData &data, map<string, string> &head,std::string cookie, map<string, string> &options){
+	return requests::request("POST", url, data, head,cookie,options);
 }
 
-Response	requests::https_post(string url, map<string, string> &data, map<string, string> files, map<string, string> &head, map<string, string> &options){
+Response	requests::https_post(string url, map<string, string> &data, map<string, string> files, map<string, string> &head,std::string cookie,  map<string, string> &options){
 	string up_str;
 	BinaryData up_data;
 	if (files.size() > 0){//要上传文件，加boundary
@@ -330,7 +329,7 @@ Response	requests::https_post(string url, map<string, string> &data, map<string,
 		up_str.erase(up_str.end() - 1);
 		up_data.append(up_str);
 	}
-	return requests::request("POST", url, up_data, head);
+	return requests::request("POST", url, up_data, head,cookie,options);
 }
 
 
@@ -388,7 +387,7 @@ again:
 		InternetSetOption(hRequest, INTERNET_OPTION_PROXY, &proxy_info, sizeof(proxy_info));
 	}
 	//Set Cookies Header
-	if (cookie.size()>0){
+ 	if (cookie.size()>0){
 		vector<string> name_value = SplitString(cookie, ";");
 		for (std::string v : name_value){
 			int pos = v.find("=");
@@ -396,7 +395,7 @@ again:
 			std::string name = s_trim(v.substr(0, pos));
 			std::string value = s_trim(v.substr(pos + 1));
 			if (InternetSetCookieA(("https://" + req.domain).c_str(), name.c_str(),value.c_str())){
-				printf("Cookies Add Ok");
+				//printf("Cookies Add Ok");
 			}
 		}
 		
@@ -468,9 +467,9 @@ again:
 		free(pMessageBody);
 	}
 	//Free handles
-	//CloseHandle(hRequest);
-	//CloseHandle(hConnect);
-	//CloseHandle(hInternet);
+	InternetCloseHandle(hRequest);
+	InternetCloseHandle(hConnect);
+	InternetCloseHandle(hInternet);
 	auto h = ws2s(header);
 	Response rep(h, content);
 	return rep;

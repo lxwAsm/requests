@@ -1,16 +1,18 @@
-﻿生成启动时间为 2020/3/28 21:18:49。
+﻿生成启动时间为 2020/3/29 14:23:26。
 项目“\\vmware-host\Shared Folders\文稿\Visual Studio 2013\requests\requests\requests.vcxproj”在节点 2 上(Build 个目标)。
 ClCompile:
   C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt http.cpp main.cpp
-  main.cpp
   http.cpp
 \\vmware-host\shared folders\文稿\visual studio 2013\requests\requests\http.cpp(11): warning C4018: “<”: 有符号/无符号不匹配
 \\vmware-host\shared folders\文稿\visual studio 2013\requests\requests\http.cpp(43): warning C4018: “<”: 有符号/无符号不匹配
-\\vmware-host\shared folders\文稿\visual studio 2013\requests\requests\http.cpp(310): warning C4244: “=”: 从“std::streamoff”转换到“long”，可能丢失数据
+\\vmware-host\shared folders\文稿\visual studio 2013\requests\requests\http.cpp(309): warning C4244: “=”: 从“std::streamoff”转换到“long”，可能丢失数据
+\\vmware-host\shared folders\文稿\visual studio 2013\requests\requests\http.cpp(446): warning C4305: “=”: 从“int”到“BYTE”截断
+\\vmware-host\shared folders\文稿\visual studio 2013\requests\requests\http.cpp(446): warning C4309: “=”: 截断常量值
 \\vmware-host\shared folders\文稿\visual studio 2013\requests\requests\http.cpp(447): warning C4305: “=”: 从“int”到“BYTE”截断
 \\vmware-host\shared folders\文稿\visual studio 2013\requests\requests\http.cpp(447): warning C4309: “=”: 截断常量值
-\\vmware-host\shared folders\文稿\visual studio 2013\requests\requests\http.cpp(448): warning C4305: “=”: 从“int”到“BYTE”截断
-\\vmware-host\shared folders\文稿\visual studio 2013\requests\requests\http.cpp(448): warning C4309: “=”: 截断常量值
+  正在生成代码...
+  正在编译...
+  main.cpp
   正在生成代码...
 Link:
   C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"\\vmware-host\Shared Folders\文稿\Visual Studio 2013\requests\Debug\requests.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"\\vmware-host\Shared Folders\文稿\Visual Studio 2013\requests\Debug\requests.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"\\vmware-host\Shared Folders\文稿\Visual Studio 2013\requests\Debug\requests.lib" /MACHINE:X86 Debug\BinaryData.obj
@@ -23,4 +25,4 @@ Link:
 
 生成成功。
 
-已用时间 00:00:05.39
+已用时间 00:00:03.24

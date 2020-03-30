@@ -26,9 +26,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	fstream png("baidu.html", ios::out | ios::binary);
 	png.write((const char*)resp.GetBinary(), resp.size());
 	png.close();*/
-	data["name"] = "cpp";
-	data["age"] = "14";
-	Response resp = Post("http://47.106.162.182:8080/post.php", data);
+	header["name"] = "cpp";
+	header["age"] = "14";
+	header["User-Agent"] = "XiaoMi Brower";
+	BinaryData post_data;
+	post_data.append("PostData");
+	Response resp = Post("http://47.106.162.182:8080/header.php",post_data,header,cookie);
 	cout << resp.status << endl;
 	cout << resp.GetText() << endl;
 	//cout << "---------HTTPS----------" << endl;
