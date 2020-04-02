@@ -18,8 +18,8 @@ Response::Response(shared_ptr<BinaryData> rep)
 		string key = line[i].substr(0, p);
 		string value = line[i].substr(p + 1, line[i].size() - 1 - p);
 		header[key] = value;
-		
 	}
+
 }
 
 unsigned int Response::status2int(string &st){
@@ -28,7 +28,7 @@ unsigned int Response::status2int(string &st){
 	return atoi(st.substr(s + 1, e - s).c_str());
 	
 }
-Response::Response(std::string &h,shared_ptr<BinaryData> data){
+Response::Response(std::string &h,std::string &origin_domain,shared_ptr<BinaryData> data){
 	string head;
 	int pos = h.find("\r\n\r\n");
 	if (pos != -1){
@@ -51,6 +51,11 @@ Response::Response(std::string &h,shared_ptr<BinaryData> data){
 		string value = line[i].substr(p + 1, line[i].size() - 1 - p);
 		header[key] = value;
 		//printf("https header%s:%s\n", key.c_str(), value.c_str());
+	}
+	if (header["Set-Cookie"].size() > 0){
+		if (InternetSetCookieA(origin_domain.c_str(), NULL, header["Set-Cookie"].c_str()) == TRUE){
+			printf("Set-Cookie OK");
+		};
 	}
 }
 void Response::SplitString(const string& s, vector<string>& v, const string& c)
@@ -445,7 +450,7 @@ again:
 			shared_ptr<BinaryData> err_info(new BinaryData(500));
 			err_info->append("HttpQueryInfo Timeout");
 			std::string err_header;
-			Response	resp(err_header,err_info);
+			Response	resp(err_header,req.prefix+req.domain,err_info);
 			resp.status = 0;
  			return resp;
 		}
@@ -478,6 +483,6 @@ again:
 	InternetCloseHandle(hConnect);
 	InternetCloseHandle(hInternet);
 	auto h = ws2s(header);
-	Response rep(h, content);
+	Response rep(h,req.prefix+req.domain, content);
 	return rep;
 }

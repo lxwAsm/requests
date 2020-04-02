@@ -31,9 +31,20 @@ int _tmain(int argc, _TCHAR* argv[])
 	header["User-Agent"] = "XiaoMi Brower";
 	BinaryData post_data;
 	post_data.append("PostData");
-	Response resp = Post("47.106.162.182:8080/header.php",post_data,header,cookie);
+	Response resp = Get("https://baidu.com/");
 	cout << resp.status << endl;
-	cout << resp.GetText() << endl;
+	for (auto i : resp.Header()){
+		cout << i.first << ":" << i.second << endl;
+	}
+	cout << "--------------------";
+	char *buffer = new char[300];
+	DWORD size = 300;
+	if (InternetGetCookieA("https://baidu.com", NULL, buffer, &size) == TRUE){
+		cout << buffer << endl;
+		delete buffer;
+	}
+	
+	//cout << resp.GetText() << endl;
 	//cout << "---------HTTPS----------" << endl;
 	/*Response bin = Get("https://img12.360buyimg.com/n1/s450x450_jfs/t1/48975/24/16741/337144/5de0913eE206334a5/32c2af4c117024c3.jpg");
 	auto header = bin.Header();

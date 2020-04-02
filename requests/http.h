@@ -19,7 +19,7 @@ namespace requests{
 	public:
 		Response();
 		Response(std::shared_ptr<BinaryData> rep);
-		Response(std::string &h, std::shared_ptr<BinaryData> data);
+		Response(std::string &h,std::string &origin_domain, std::shared_ptr<BinaryData> data);
 		~Response();
 		std::string	GetText();
 		map<std::string,std::string>	Header();
