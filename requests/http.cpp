@@ -52,9 +52,18 @@ Response::Response(std::string &h,std::string &origin_domain,shared_ptr<BinaryDa
 		header[key] = value;
 		//printf("https header%s:%s\n", key.c_str(), value.c_str());
 	}
-	if (header["Set-Cookie"].size() > 0){
+	if (header.find("Set-Cookie")!=header.end()){
+		vector<string> name_value;
+		SplitString(header["Set-Cookie"], name_value,";");
+		for (std::string v : name_value){
+			int pos = v.find("=");
+			if (pos == -1) continue;
+			std::string name = s_trim(v.substr(0, pos));
+			std::string value = s_trim(v.substr(pos + 1));
+			cookie[name] = value;
+		}
 		if (InternetSetCookieA(origin_domain.c_str(), NULL, header["Set-Cookie"].c_str()) == TRUE){
-			printf("Set-Cookie OK");
+			//printf("Set-Cookie OK");
 		};
 	}
 }
@@ -186,8 +195,80 @@ Request::~Request(){
 
 }
 
+Session::Session(){
+
+}
+
+Session::~Session(){
+	
+}
+
+Response Session::Get(std::string url, map<string, string> &head, std::string cookie_arg,map<string, string> &options){
+	Response r =  https_get(url, head, cookie_arg, options);
+	for (auto i : r.cookie){
+		cookies[i.first] = i.second;
+	}
+	return r;
+}
+
+Response Session::Post(std::string url, map<string, string> &data, map<string, string> files, map<string, string> &head, std::string cookie_arg, map<string, string> &options){
+	Response r = https_post(url, data, files, head, cookie_arg, options);
+	for (auto i : r.cookie){
+		cookies[i.first] = i.second;
+	}
+	return r;
+}
+
+//----------BinaryData-----------
+BinaryData::BinaryData()
+{
+
+}
+
+BinaryData::BinaryData(int maxsize)
+{
+	data.reserve(maxsize);
+}
 
 
+void BinaryData::append(byte n){
+	data.push_back(n);
+}
+
+int	 BinaryData::size(){
+	return data.size();
+}
+void BinaryData::append(const std::string n){
+	data.insert(data.end(), n.begin(), n.end());
+
+}
+
+int  BinaryData::find(const char *s){
+	return std::string(data.begin(), data.end()).find(s);
+}
+
+std::string BinaryData::substr(int start, int end){
+	return std::string(data.begin() + start, data.begin() + end);
+}
+
+void BinaryData::erase(int start, int end){
+	data.erase(data.begin() + start, data.begin() + end);
+}
+const byte* BinaryData::raw_buffer(){
+	return data.data();
+}
+void BinaryData::append(byte *buffer, int size){
+	data.insert(data.end(), buffer, buffer + size);
+}
+std::string BinaryData::to_string(){
+	return std::string(data.begin(), data.end());
+}
+BinaryData::~BinaryData()
+{
+
+}
+
+//-----------end binary----------
 
 std::string requests::GetIpByDomainName(const char *szHost)
 {

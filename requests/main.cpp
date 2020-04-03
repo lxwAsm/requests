@@ -33,16 +33,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	post_data.append("PostData");
 	Response resp = Get("https://baidu.com/");
 	cout << resp.status << endl;
-	for (auto i : resp.Header()){
+	for (auto i : resp.cookie){
 		cout << i.first << ":" << i.second << endl;
 	}
 	cout << "--------------------";
-	char *buffer = new char[300];
-	DWORD size = 300;
-	if (InternetGetCookieA("https://baidu.com", NULL, buffer, &size) == TRUE){
-		cout << buffer << endl;
-		delete buffer;
-	}
 	
 	//cout << resp.GetText() << endl;
 	//cout << "---------HTTPS----------" << endl;

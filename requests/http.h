@@ -8,12 +8,31 @@
 #include <fstream>
 #include <Windows.h>
 #include "wininet.h"
-#include "BinaryData.h"
 #include "utils.h"
 #pragma comment(lib,"wininet.lib")
 #pragma comment(lib, "ws2_32.lib")
 using namespace std;
+typedef unsigned char byte;//
 namespace requests{
+	class BinaryData
+	{
+	public:
+		BinaryData();
+		explicit BinaryData(int size);
+		//BinaryData(const BinaryData &);
+		~BinaryData();
+		void append(byte n);
+		void append(byte *buffer, int size);
+		void append(std::string n);
+		int  find(const char *s);
+		std::string substr(int start, int end);
+		void erase(int start, int end);
+		const byte* raw_buffer();
+		int	 size();
+		std::string	to_string();
+	private:
+		std::vector<byte>	data;
+	};
 	class Response
 	{
 	public:
@@ -25,6 +44,7 @@ namespace requests{
 		map<std::string,std::string>	Header();
 		const  byte*GetBinary();
 		unsigned int size();
+		map < std::string, std::string> cookie;
 		std::string	operator[](std::string key);
 		unsigned int status;
 	private:
@@ -54,12 +74,16 @@ namespace requests{
 	};
 	class Session{
 	public:
+		Session();
 		~Session();
-		Response	Get(std::string url, map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
-		Response	Post(std::string url, map<string, string> &data, map<string, string> files = map<string, string>(), map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
+		Response	Get(std::string url, map<string, string> &head = map<string, string>(), std::string cookie = "", map<string, string> &options = map<string, string>());
+		Response	Post(std::string url, map<string, string> &data, map<string, string> files = map<string, string>(), map<string, string> &head = map<string, string>(), std::string cookie = "", map<string, string> &options = map<string, string>());
 		Response	Post(std::string url, BinaryData &data, map<string, string> &head = map<string, string>(), map<string, string> &options = map<string, string>());
 		map<std::string, std::string> cookies;
+	private:
+		//HINTERNET	hInternet;
 	};
+	
 	std::string GetIpByDomainName(const char *szHost);
 	Response	Get(std::string url, map<string, string> &head = map<string, string>(),std::string cookie="", map<string, string> &options = map<string, string>());
 	Response	Post(std::string url, map<string, string> &data, map<string, string> files = map<string, string>(), map<string, string> &head = map<string, string>(),std::string cookie="", map<string, string> &options = map<string, string>());
