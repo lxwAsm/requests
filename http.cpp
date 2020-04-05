@@ -18,8 +18,8 @@ Response::Response(shared_ptr<BinaryData> rep)
 		string key = line[i].substr(0, p);
 		string value = line[i].substr(p + 1, line[i].size() - 1 - p);
 		header[key] = value;
-		
 	}
+
 }
 
 unsigned int Response::status2int(string &st){
@@ -28,7 +28,7 @@ unsigned int Response::status2int(string &st){
 	return atoi(st.substr(s + 1, e - s).c_str());
 	
 }
-Response::Response(std::string &h,shared_ptr<BinaryData> data){
+Response::Response(std::string &h,std::string &origin_domain,shared_ptr<BinaryData> data){
 	string head;
 	int pos = h.find("\r\n\r\n");
 	if (pos != -1){
@@ -51,6 +51,20 @@ Response::Response(std::string &h,shared_ptr<BinaryData> data){
 		string value = line[i].substr(p + 1, line[i].size() - 1 - p);
 		header[key] = value;
 		//printf("https header%s:%s\n", key.c_str(), value.c_str());
+	}
+	if (header.find("Set-Cookie")!=header.end()){
+		vector<string> name_value;
+		SplitString(header["Set-Cookie"], name_value,";");
+		for (std::string v : name_value){
+			int pos = v.find("=");
+			if (pos == -1) continue;
+			std::string name = s_trim(v.substr(0, pos));
+			std::string value = s_trim(v.substr(pos + 1));
+			cookie[name] = value;
+		}
+		if (InternetSetCookieA(origin_domain.c_str(), NULL, header["Set-Cookie"].c_str()) == TRUE){
+			//printf("Set-Cookie OK");
+		};
 	}
 }
 void Response::SplitString(const string& s, vector<string>& v, const string& c)
@@ -114,7 +128,14 @@ Request::Request(std::string url, std::string method, map<string, string> &head,
 	this->timeout = atoi(default_options["timeout"].c_str());
 	this->proxy = default_options["proxy"];
 	int pos = url.find("://");
-	if (pos == -1) return;
+	if (pos == -1){
+		url.insert(0, "http://");
+		this->prefix = "http://";
+		pos = url.find("://");
+	}
+	else{
+		this->prefix = url.substr(0,pos+3);
+	}
 	int end = url.find('/', pos + 3);
 	if (end == -1){//没有参数
 		domain = url.substr(pos + 3);
@@ -174,8 +195,80 @@ Request::~Request(){
 
 }
 
+Session::Session(){
+
+}
+
+Session::~Session(){
+	
+}
+
+Response Session::Get(std::string url, map<string, string> &head, std::string cookie_arg,map<string, string> &options){
+	Response r =  https_get(url, head, cookie_arg, options);
+	for (auto i : r.cookie){
+		cookies[i.first] = i.second;
+	}
+	return r;
+}
+
+Response Session::Post(std::string url, map<string, string> &data, map<string, string> files, map<string, string> &head, std::string cookie_arg, map<string, string> &options){
+	Response r = https_post(url, data, files, head, cookie_arg, options);
+	for (auto i : r.cookie){
+		cookies[i.first] = i.second;
+	}
+	return r;
+}
+
+//----------BinaryData-----------
+BinaryData::BinaryData()
+{
+
+}
+
+BinaryData::BinaryData(int maxsize)
+{
+	data.reserve(maxsize);
+}
 
 
+void BinaryData::append(byte n){
+	data.push_back(n);
+}
+
+int	 BinaryData::size(){
+	return data.size();
+}
+void BinaryData::append(const std::string n){
+	data.insert(data.end(), n.begin(), n.end());
+
+}
+
+int  BinaryData::find(const char *s){
+	return std::string(data.begin(), data.end()).find(s);
+}
+
+std::string BinaryData::substr(int start, int end){
+	return std::string(data.begin() + start, data.begin() + end);
+}
+
+void BinaryData::erase(int start, int end){
+	data.erase(data.begin() + start, data.begin() + end);
+}
+const byte* BinaryData::raw_buffer(){
+	return data.data();
+}
+void BinaryData::append(byte *buffer, int size){
+	data.insert(data.end(), buffer, buffer + size);
+}
+std::string BinaryData::to_string(){
+	return std::string(data.begin(), data.end());
+}
+BinaryData::~BinaryData()
+{
+
+}
+
+//-----------end binary----------
 
 std::string requests::GetIpByDomainName(const char *szHost)
 {
@@ -246,6 +339,19 @@ Response	DoSend(std::string url, map<string, string> &head, string method = "GET
 	return Response(pData);
 
 }
+//************************************
+// Method:    Get
+// FullName:  requests::Get
+// Access:    public 
+// Returns:   requests::Response
+// Qualifier:
+// Parameter: std::string url
+// Parameter: map<string
+// Parameter: string> & head
+// Parameter: std::string cookie
+// Parameter: map<string
+// Parameter: string> & options
+//************************************
 Response	requests::Get(std::string url, map<string, string> &head,std::string cookie, map<string, string> &options)
 {
 	return https_get(url, head,cookie,options);
@@ -394,7 +500,7 @@ again:
 			if (pos == -1) continue;
 			std::string name = s_trim(v.substr(0, pos));
 			std::string value = s_trim(v.substr(pos + 1));
-			if (InternetSetCookieA(("https://" + req.domain).c_str(), name.c_str(),value.c_str())){
+			if (InternetSetCookieA((req.prefix + req.domain).c_str(), name.c_str(),value.c_str())){
 				//printf("Cookies Add Ok");
 			}
 		}
@@ -438,7 +544,7 @@ again:
 			shared_ptr<BinaryData> err_info(new BinaryData(500));
 			err_info->append("HttpQueryInfo Timeout");
 			std::string err_header;
-			Response	resp(err_header,err_info);
+			Response	resp(err_header,req.prefix+req.domain,err_info);
 			resp.status = 0;
  			return resp;
 		}
@@ -471,6 +577,6 @@ again:
 	InternetCloseHandle(hConnect);
 	InternetCloseHandle(hInternet);
 	auto h = ws2s(header);
-	Response rep(h, content);
+	Response rep(h,req.prefix+req.domain, content);
 	return rep;
 }
