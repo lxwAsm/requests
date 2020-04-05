@@ -9,6 +9,7 @@
 #include <Windows.h>
 #include "wininet.h"
 #include "utils.h"
+#include "CJsonObject.hpp"
 #pragma comment(lib,"wininet.lib")
 #pragma comment(lib, "ws2_32.lib")
 using namespace std;
@@ -86,6 +87,7 @@ namespace requests{
 	
 	std::string GetIpByDomainName(const char *szHost);
 	Response	Get(std::string url, map<string, string> &head = map<string, string>(),std::string cookie="", map<string, string> &options = map<string, string>());
+	//Response	Get(std::string url, map<string, string> &head = map<string, string>(), map<std::string, std::string> &cookie = map<string, string>(), map<string, string> &options = map<string, string>());
 	Response	Post(std::string url, map<string, string> &data, map<string, string> files = map<string, string>(), map<string, string> &head = map<string, string>(),std::string cookie="", map<string, string> &options = map<string, string>());
 	Response	Post(std::string url, BinaryData &data, map<string, string> &head = map<string, string>(),std::string cookie="", map<string, string> &options = map<string, string>());
 	Response    https_get(string url, map<string, string> &head = map<string, string>(),std::string cookie="", map<string, string> &options = map<string, string>());

@@ -339,6 +339,19 @@ Response	DoSend(std::string url, map<string, string> &head, string method = "GET
 	return Response(pData);
 
 }
+//************************************
+// Method:    Get
+// FullName:  requests::Get
+// Access:    public 
+// Returns:   requests::Response
+// Qualifier:
+// Parameter: std::string url
+// Parameter: map<string
+// Parameter: string> & head
+// Parameter: std::string cookie
+// Parameter: map<string
+// Parameter: string> & options
+//************************************
 Response	requests::Get(std::string url, map<string, string> &head,std::string cookie, map<string, string> &options)
 {
 	return https_get(url, head,cookie,options);

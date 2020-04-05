@@ -31,12 +31,21 @@ int _tmain(int argc, _TCHAR* argv[])
 	header["User-Agent"] = "XiaoMi Brower";
 	BinaryData post_data;
 	post_data.append("PostData");
-	Response resp = Get("https://baidu.com/");
-	cout << resp.status << endl;
-	for (auto i : resp.cookie){
-		cout << i.first << ":" << i.second << endl;
+	Response resp = Get("https://cn.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1");
+	if (resp.status==200){
+		CJsonObject data(resp.GetText());
+		string url = "https://www.bing.com/"+data["images"][0]("url");
+		//cout << data.ToFormattedString() << endl;
+		Response pic = Get(url);
+		if (pic.status == 200){
+			fstream png("baidu.jpg", ios::out | ios::binary);
+			png.write((const char*)pic.GetBinary(), pic.size());
+			png.close();
+			cout << "OK\n";
+		}
+		
 	}
-	cout << "--------------------";
+	
 	
 	//cout << resp.GetText() << endl;
 	//cout << "---------HTTPS----------" << endl;
