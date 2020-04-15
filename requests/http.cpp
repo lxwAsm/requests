@@ -511,7 +511,7 @@ again:
 	auto he = s2ws(req.HeaderToString());
 	printf("https:%S\ntimeout:%d\nproxy:%s\n%s", he.c_str(),req.timeout,req.proxy.c_str(),data.to_string().c_str());
 	//printf("post data:%s", data.to_string().c_str());
-	if (!HttpSendRequest(hRequest, he.c_str(),he.size(),(LPVOID)data.raw_buffer(),data.size()))
+	if (!HttpSendRequest(hRequest, he.c_str(),-1,(LPVOID)data.raw_buffer(),data.size()))
 	{
 		dwError = GetLastError();
 	}
@@ -563,12 +563,15 @@ again:
 		BOOL bResult = InternetReadFile(hRequest, pMessageBody,
 			dwBytesAvailable, &dwBytesRead);
 		if (!bResult) {
+			free(pMessageBody);
 			fprintf(stderr, "InternetReadFile failed, error = %d (0x%x)/n",
 				GetLastError(), GetLastError());
 			break;
 		}
-		if (dwBytesRead == 0)
+		if (dwBytesRead == 0){
+			free(pMessageBody);
 			break; // End of File.
+		}
 		content->append(pMessageBody, dwBytesRead);
 		free(pMessageBody);
 	}

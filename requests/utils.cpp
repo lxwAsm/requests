@@ -50,7 +50,7 @@ std::string Base64::Encode(char* Data, int DataByte)
 		strEncode += EncodeTable[((Tmp[1] << 4) | (Tmp[2] >> 4)) & 0x3F];
 		strEncode += EncodeTable[((Tmp[2] << 2) | (Tmp[3] >> 6)) & 0x3F];
 		strEncode += EncodeTable[Tmp[3] & 0x3F];
-		if (LineLength += 4, LineLength == 76) { strEncode += "\r\n"; LineLength = 0; }
+		//if (LineLength += 4, LineLength == 76) { strEncode += "\r\n"; LineLength = 0; }
 	}
 	//对剩余数据进行编码
 	int Mod = DataByte % 3;
