@@ -43,8 +43,8 @@
 >map<string, string> data;  
 >map<string, string> files;  
 >data["key"] = "something";  
->data["submit"] = "Submit"; //form表单的其他要上传的数据，如账号密码。 
->files["file"] = "C:\\stdafx.h";  //form表单中的文件字段。
+>data["submit"] = "Submit"; //form表单的其他要上传的数据，如账号密码。   
+>files["file"] = "C:\\stdafx.h";  //form表单中的文件字段。  
 >Response resp = Post(url,data,files);  
 >cout << resp.status << endl;  
 >cout << resp.GetText() << endl;  
