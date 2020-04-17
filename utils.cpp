@@ -1,5 +1,6 @@
 #include "utils.h"
 
+
 std::wstring s2ws(const std::string& str)
 {
 	std::wstring result; 
@@ -50,7 +51,7 @@ std::string Base64::Encode(char* Data, int DataByte)
 		strEncode += EncodeTable[((Tmp[1] << 4) | (Tmp[2] >> 4)) & 0x3F];
 		strEncode += EncodeTable[((Tmp[2] << 2) | (Tmp[3] >> 6)) & 0x3F];
 		strEncode += EncodeTable[Tmp[3] & 0x3F];
-		if (LineLength += 4, LineLength == 76) { strEncode += "\r\n"; LineLength = 0; }
+		//if (LineLength += 4, LineLength == 76) { strEncode += "\r\n"; LineLength = 0; }
 	}
 	//对剩余数据进行编码
 	int Mod = DataByte % 3;
@@ -469,18 +470,18 @@ std::vector<std::string> SplitString(const std::string& s, const std::string& c)
 	return v;
 }
 
-std::string &ltrim(std::string &s) {
+std::string ltrim(std::string s) {
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
 	return s;
 }
 
 // trim from end  
-std::string &rtrim(std::string &s) {
+std::string rtrim(std::string s) {
 	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
 	return s;
 }
 
 // trim from both ends  
-std::string &s_trim(std::string &s) {
+std::string s_trim(std::string s) {
 	return ltrim(rtrim(s));
 }

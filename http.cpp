@@ -28,7 +28,7 @@ unsigned int Response::status2int(string &st){
 	return atoi(st.substr(s + 1, e - s).c_str());
 	
 }
-Response::Response(std::string &h,std::string &origin_domain,shared_ptr<BinaryData> data){
+Response::Response(std::string h,std::string origin_domain,shared_ptr<BinaryData> data){
 	string head;
 	int pos = h.find("\r\n\r\n");
 	if (pos != -1){
@@ -104,7 +104,7 @@ string	Response::operator[](string key){
 Response::~Response(){
 	
 }
-Request::Request(std::string url, std::string method, map<string, string> &head, map<string, string> &options) :url(url)
+Request::Request(std::string url, std::string method,const map<string, string> &head,const map<string, string> &options) :url(url)
 {
 	//http://www.baidu.com/hello?jack=123
 	header["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36";
@@ -120,7 +120,7 @@ Request::Request(std::string url, std::string method, map<string, string> &head,
 		}
 	}
 	if (options.size() > 0){
-		map<std::string,std::string>::iterator	begin = options.begin();
+		map<std::string,std::string>::const_iterator	begin = options.cbegin();
 		for (; begin != options.end(); begin++){
 			default_options[begin->first] = begin->second;//替换默认options的设置
 		}
@@ -203,7 +203,7 @@ Session::~Session(){
 	
 }
 
-Response Session::Get(std::string url, map<string, string> &head, std::string cookie_arg,map<string, string> &options){
+Response Session::Get(std::string url,const map<string, string> &head, std::string cookie_arg,const map<string, string> &options){
 	Response r =  https_get(url, head, cookie_arg, options);
 	for (auto i : r.cookie){
 		cookies[i.first] = i.second;
@@ -211,7 +211,7 @@ Response Session::Get(std::string url, map<string, string> &head, std::string co
 	return r;
 }
 
-Response Session::Post(std::string url, map<string, string> &data, map<string, string> files, map<string, string> &head, std::string cookie_arg, map<string, string> &options){
+Response Session::Post(std::string url, map<string, string> &data,const map<string, string> files,const map<string, string> &head, std::string cookie_arg,const map<string, string> &options){
 	Response r = https_post(url, data, files, head, cookie_arg, options);
 	for (auto i : r.cookie){
 		cookies[i.first] = i.second;
@@ -352,20 +352,20 @@ Response	DoSend(std::string url, map<string, string> &head, string method = "GET
 // Parameter: map<string
 // Parameter: string> & options
 //************************************
-Response	requests::Get(std::string url, map<string, string> &head,std::string cookie, map<string, string> &options)
+Response	requests::Get(std::string url,const map<string, string> &head,std::string cookie,const map<string, string> &options)
 {
 	return https_get(url, head,cookie,options);
 }
 
-Response	requests::Post(std::string url, BinaryData &data, map<string, string> &head, std::string cookie,map<string, string> &options){
+Response	requests::Post(std::string url, BinaryData &data,const map<string, string> &head, std::string cookie,const map<string, string> &options){
 	return requests::https_post(url, data, head,cookie,options);
 }
 
-Response requests::Post(string url, map<string, string> &data,map<string,string> files, map<string, string> &head,std::string cookie, map<string, string> &options){
+Response requests::Post(string url, map<string, string> &data,const map<string,string> files,const map<string, string> &head,std::string cookie,const map<string, string> &options){
 	return https_post(url,data,files,head,cookie,options);
 }
 
-Response	requests::request(string method, string url, BinaryData &data, map<string, string> &head,std::string cookie, map<string, string> &options){
+Response	requests::request(string method, string url, BinaryData &data,const map<string, string> &head,std::string cookie,const map<string, string> &options){
 	DWORD	flags;
 	if (to_lower(url.substr(0, 6)) == "https:"){
 		 flags = INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP |
@@ -384,16 +384,16 @@ Response	requests::request(string method, string url, BinaryData &data, map<stri
 	}
 }
 
-Response requests::https_get(string url, map<string, string> &head,std::string cookie, map<string, string> &options){
+Response requests::https_get(string url,const map<string, string> &head,std::string cookie,const map<string, string> &options){
 	BinaryData db;
 	return requests::request("GET", url,db, head,cookie,options); //request函数里面处理http和https
 }
 
-Response requests::https_post(string url, BinaryData &data, map<string, string> &head,std::string cookie, map<string, string> &options){
+Response requests::https_post(string url, BinaryData &data,const map<string, string> &head,std::string cookie,const map<string, string> &options){
 	return requests::request("POST", url, data, head,cookie,options);
 }
 
-Response	requests::https_post(string url, map<string, string> &data, map<string, string> files, map<string, string> &head,std::string cookie,  map<string, string> &options){
+Response	requests::https_post(string url, map<string, string> &data,const map<string, string> files,const map<string, string> &head,std::string cookie,const  map<string, string> &options){
 	string up_str;
 	BinaryData up_data;
 	if (files.size() > 0){//要上传文件，加boundary
@@ -439,7 +439,7 @@ Response	requests::https_post(string url, map<string, string> &data, map<string,
 }
 
 
-Response	requests::https_send(string method, string url, int port, DWORD flags, BinaryData &data, map<string, string> &head,std::string cookie, map<string, string> &options){
+Response	requests::https_send(string method, string url, int port, DWORD flags, BinaryData &data,const map<string, string> &head,std::string cookie,const map<string, string> &options){
 	Request req(url,method+" ", head,options);
 	LPCTSTR lpszAgent = L"WinInetGet/0.1";
 	HINTERNET hInternet = InternetOpen(lpszAgent,
@@ -509,26 +509,22 @@ again:
 	req.SetPostHeader(data);
 	DWORD dwError = 0;
 	auto he = s2ws(req.HeaderToString());
-	printf("https:%S\ntimeout:%d\nproxy:%s\n%s", he.c_str(),req.timeout,req.proxy.c_str(),data.to_string().c_str());
+	//printf("https:%S\ntimeout:%d\nproxy:%s\n%s", he.c_str(),req.timeout,req.proxy.c_str(),data.to_string().c_str());
 	//printf("post data:%s", data.to_string().c_str());
-	if (!HttpSendRequest(hRequest, he.c_str(),he.size(),(LPVOID)data.raw_buffer(),data.size()))
+	//Ignore 12057 Error
+	DWORD dwFlags;
+	DWORD dwBuffLen = sizeof(dwFlags);
+	InternetQueryOption(hRequest, INTERNET_OPTION_SECURITY_FLAGS, (LPVOID)&dwFlags, &dwBuffLen);
+	dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+	dwFlags |= SECURITY_FLAG_IGNORE_REVOCATION;
+	InternetSetOption(hRequest, INTERNET_OPTION_SECURITY_FLAGS, &dwFlags, sizeof(dwFlags));
+	if (!HttpSendRequest(hRequest, he.c_str(), he.size(), (LPVOID)data.raw_buffer(), data.size()))
 	{
+		char err_buffer[200] = { 0 };
 		dwError = GetLastError();
-	}
-	if (dwError == ERROR_INTERNET_INVALID_CA)
-	{
-		fprintf(stderr, "HttpSendRequest failed, error = %d (0x%x)/n",
+		snprintf(err_buffer, 200, "HttpSendRequest failed, error = %d (0x%x)/n",
 			dwError, dwError);
-
-		DWORD dwFlags;
-		DWORD dwBuffLen = sizeof(dwFlags);
-		InternetQueryOption(hRequest, INTERNET_OPTION_SECURITY_FLAGS,
-			(LPVOID)&dwFlags, &dwBuffLen);
-
-		dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
-		InternetSetOption(hRequest, INTERNET_OPTION_SECURITY_FLAGS,
-			&dwFlags, sizeof(dwFlags));
-		goto again;
+		throw err_buffer;
 	}
 	//获得HTTP Response Header信息
 	DWORD dwInfoLevel = HTTP_QUERY_RAW_HEADERS_CRLF;
@@ -558,17 +554,21 @@ again:
 	BYTE *pMessageBody = NULL;
 	shared_ptr<BinaryData> content(new BinaryData(1000));
 	while (InternetQueryDataAvailable(hRequest, &dwBytesAvailable, 0, 0)) {
-		pMessageBody = (BYTE *)malloc(dwBytesAvailable + 1);
+		pMessageBody = (BYTE*)malloc(dwBytesAvailable + 1);
 		DWORD dwBytesRead;
 		BOOL bResult = InternetReadFile(hRequest, pMessageBody,
 			dwBytesAvailable, &dwBytesRead);
 		if (!bResult) {
-			fprintf(stderr, "InternetReadFile failed, error = %d (0x%x)/n",
+			char err_buffer[200] = { 0 };
+			free(pMessageBody);
+			snprintf(err_buffer,200,"InternetReadFile failed, error = %d (0x%x)/n",
 				GetLastError(), GetLastError());
-			break;
+			throw err_buffer;
 		}
-		if (dwBytesRead == 0)
+		if (dwBytesRead == 0) {
+			free(pMessageBody);
 			break; // End of File.
+		}
 		content->append(pMessageBody, dwBytesRead);
 		free(pMessageBody);
 	}

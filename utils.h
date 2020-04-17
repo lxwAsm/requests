@@ -2,7 +2,9 @@
 #define utils996
 #include <string>
 #include <algorithm>
+#include <fstream>
 #include <cctype>
+#include <locale.h>
 #include <functional>
 #include <vector>
 #include <Windows.h>//
@@ -73,7 +75,7 @@ private:
 std::string md5(const std::string str);
 std::vector<std::string> SplitString(const std::string& s, const std::string& c);
 
-static inline std::string &ltrim(std::string &s);
-static inline std::string &rtrim(std::string &s);
-std::string &s_trim(std::string &s);
+static  std::string ltrim(std::string s);
+static  std::string rtrim(std::string s);
+std::string s_trim(std::string s);
 #endif
