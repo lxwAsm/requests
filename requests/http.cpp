@@ -510,25 +510,20 @@ again:
 	DWORD dwError = 0;
 	auto he = s2ws(req.HeaderToString());
 	printf("https:%S\ntimeout:%d\nproxy:%s\n%s", he.c_str(),req.timeout,req.proxy.c_str(),data.to_string().c_str());
-	//printf("post data:%s", data.to_string().c_str());
-	if (!HttpSendRequest(hRequest, he.c_str(),-1,(LPVOID)data.raw_buffer(),data.size()))
+	//Ignore 12057 Error
+	DWORD dwFlags;
+	DWORD dwBuffLen = sizeof(dwFlags);
+	InternetQueryOption(hRequest, INTERNET_OPTION_SECURITY_FLAGS, (LPVOID)&dwFlags, &dwBuffLen);
+	dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
+	dwFlags |= SECURITY_FLAG_IGNORE_REVOCATION;
+	InternetSetOption(hRequest, INTERNET_OPTION_SECURITY_FLAGS, &dwFlags, sizeof(dwFlags));
+	if (!HttpSendRequest(hRequest, he.c_str(),he.size(),(LPVOID)data.raw_buffer(),data.size()))
 	{
+		char err_buffer[200] = { 0 };
 		dwError = GetLastError();
-	}
-	if (dwError == ERROR_INTERNET_INVALID_CA)
-	{
-		fprintf(stderr, "HttpSendRequest failed, error = %d (0x%x)/n",
+		snprintf(err_buffer,200, "HttpSendRequest failed, error = %d (0x%x)/n",
 			dwError, dwError);
-
-		DWORD dwFlags;
-		DWORD dwBuffLen = sizeof(dwFlags);
-		InternetQueryOption(hRequest, INTERNET_OPTION_SECURITY_FLAGS,
-			(LPVOID)&dwFlags, &dwBuffLen);
-
-		dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
-		InternetSetOption(hRequest, INTERNET_OPTION_SECURITY_FLAGS,
-			&dwFlags, sizeof(dwFlags));
-		goto again;
+		throw err_buffer;
 	}
 	//获得HTTP Response Header信息
 	DWORD dwInfoLevel = HTTP_QUERY_RAW_HEADERS_CRLF;

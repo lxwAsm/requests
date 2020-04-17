@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <sstream>
 #include <time.h>
 #include "http.h"
 using	namespace std;
@@ -25,24 +26,30 @@ int _tmain(int argc, _TCHAR* argv[])
 	map<string, string> options;
 	map<string, string> data;
 	map<string, string> files;
-	int a;
+	int a=0;
+	stringstream info;
 	string name = "2016212073";
 	string url = "https://we.cqu.pt/api/get_student_info.php";
 	//cout << "输入名字或者学号:";
 	//cin >> name;
 	string key = generate_key(name);
 	data["key"] = key;
-	Response html = Get("https://github.com/lxwAsm/requests/blob/master/README.md");
-	cout << html.status << endl;
-	cout << html.GetText() << endl;
-	//cout << "---------HTTPS----------" << endl;
-	/*Response bin = Get("https://img12.360buyimg.com/n1/s450x450_jfs/t1/48975/24/16741/337144/5de0913eE206334a5/32c2af4c117024c3.jpg");
-	auto header = bin.Header();
-	cout << "File size: " << bin.size() << endl;
-	cout << bin["status"] << endl;
-	fstream png("baidu.jpg", ios::out | ios::binary);
-	png.write((const char*)bin.GetBinary(), bin.size());*/
-	//png.close();
+	Response html = Post(url,data);
+	if (html.status == 200){
+		CJsonObject json(html.GetText());
+		json.Get("status", a);
+		if (a == 200){
+			info << "姓名:" << json["data"]["rows"][0]("xm") << "\n";
+			info << "出生日期:" << json["data"]["rows"][0]("csrq") << "\n";
+			info << "学号:" << json["data"]["rows"][0]("xh") << "\n";
+			info << "学院:" << json["data"]["rows"][0]("yxm") << "\n";
+			info << "专业:" << json["data"]["rows"][0]("zymEn") << "\n";
+			info << "入学时间:" << json["data"]["rows"][0]("nj") << "\n";
+			info << "状态:" << json["data"]["rows"][0]("xjzt") << "\n";
+			info << "班级代号:" << json["data"]["rows"][0]("bj") << "\n";
+			cout << info.str();
+		}
+	}
 	cin >> a;
 	return 0;
 }
