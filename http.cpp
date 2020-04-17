@@ -522,7 +522,7 @@ again:
 	{
 		char err_buffer[200] = { 0 };
 		dwError = GetLastError();
-		snprintf(err_buffer, 200, "HttpSendRequest failed, error = %d (0x%x)/n",
+		_snprintf(err_buffer, 200, "HttpSendRequest failed, error = %d (0x%x)/n",
 			dwError, dwError);
 		throw err_buffer;
 	}
@@ -561,7 +561,7 @@ again:
 		if (!bResult) {
 			char err_buffer[200] = { 0 };
 			free(pMessageBody);
-			snprintf(err_buffer,200,"InternetReadFile failed, error = %d (0x%x)/n",
+			_snprintf(err_buffer,200,"InternetReadFile failed, error = %d (0x%x)/n",
 				GetLastError(), GetLastError());
 			throw err_buffer;
 		}

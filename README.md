@@ -5,7 +5,7 @@
 >#include "http.h"  
 >using	namespace std;  
 >using	namespace requests;  
->int _tmain(int argc, _TCHAR* argv[])  
+>int main(int argc)  
 >{  
 >&nbsp;&nbsp;&nbsp;&nbsp;Response resp = Get("https://baidu.com");  
 >&nbsp;&nbsp;&nbsp;&nbsp;cout << resp.status << endl;  
