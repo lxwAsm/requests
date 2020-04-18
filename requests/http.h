@@ -90,6 +90,7 @@ namespace requests{
 	Response	Get(std::string url,const map<string, string> &head = map<string, string>(),std::string cookie="",const map<string, string> &options = map<string, string>());
 	Response	Delete(std::string url, const map<string, string> &head = map<string, string>(), std::string cookie = "", const map<string, string> &options = map<string, string>());
 	Response	Head(std::string url, const map<string, string> &head = map<string, string>(), std::string cookie = "", const map<string, string> &options = map<string, string>());
+	Response	Options(std::string url, const map<string, string> &head = map<string, string>(), std::string cookie = "", const map<string, string> &options = map<string, string>());
 	Response	Post(std::string url, map<string, string> &data, map<string, string> files = map<string, string>(),const map<string, string> &head = map<string, string>(),std::string cookie="",const map<string, string> &options = map<string, string>());
 	Response	Post(std::string url, BinaryData &data,const map<string, string> &head = map<string, string>(),std::string cookie="",const map<string, string> &options = map<string, string>());
 	//Response    https_get(string url, const map<string, string> &head = map<string, string>(),std::string cookie="",const map<string, string> &options = map<string, string>());

@@ -372,6 +372,11 @@ Response	requests::Head(std::string url, const map<string, string> &head, std::s
 	return requests::request("HEAD", url, db, head, cookie, options); 
 }
 
+Response	requests::Options(std::string url, const map<string, string> &head, std::string cookie, const map<string, string> &options){
+	BinaryData db;
+	return requests::request("OPTIONS", url, db, head, cookie, options);
+
+}
 
 Response	requests::Post(std::string url, BinaryData &data,const map<string, string> &head, std::string cookie,const map<string, string> &options){
 	return requests::https_post(url, data, head,cookie,options);
@@ -457,7 +462,7 @@ Response	requests::https_post(string url, map<string, string> &data,const map<st
 
 
 Response	requests::https_send(string method, string url, int port, DWORD flags, BinaryData &data,const map<string, string> &head,std::string cookie,const map<string, string> &options){
-	Request req(url,method, head,options);
+	Request req(url,method+" ", head,options);
 	LPCTSTR lpszAgent = L"WinInetGet/0.1";
 	HINTERNET hInternet = InternetOpen(lpszAgent,
 		INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
@@ -469,7 +474,7 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 	LPCTSTR lpszPassword = NULL; //
 	DWORD dwConnectFlags = 0;
 	DWORD dwConnectContext = 0;
-
+	DWORD dwError = 0;
 	HINTERNET hConnect = InternetConnect(hInternet,
 		lpszServerName, nServerPort,
 		lpszUserName, lpszPassword,
@@ -477,7 +482,7 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 		dwConnectFlags, dwConnectContext);
 
 	//使用Get
-	auto http_method = s2ws(req.method);
+	auto http_method = s2ws(s_trim(req.method));
 	LPCTSTR lpszVerb = http_method.c_str();
 	auto param = s2ws(req.param);
 	//printf("param:%S", param.c_str());
@@ -493,6 +498,13 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 	/*
 	set internet option here
 	*/
+	if (hRequest == NULL){
+		char err_buffer[200] = { 0 };
+		dwError = GetLastError();
+		_snprintf(err_buffer, 200, "HttpOpenRequest failed, error = %d (0x%x)/n",
+			dwError, dwError);
+		throw err_buffer;
+	}
 	DWORD dwTimeOut = req.timeout;
 	InternetSetOption(hRequest, INTERNET_OPTION_CONNECT_TIMEOUT, &dwTimeOut, sizeof(dwTimeOut));
 	if (req.proxy.size() > 0){
@@ -517,7 +529,6 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 		
 	}
 	req.SetPostHeader(data);
-	DWORD dwError = 0;
 	auto he = s2ws(req.HeaderToString());
 	//printf("https:%S\ntimeout:%d\nproxy:%s\n%s", he.c_str(),req.timeout,req.proxy.c_str(),data.to_string().c_str());
 	//printf("post data:%s", data.to_string().c_str());
