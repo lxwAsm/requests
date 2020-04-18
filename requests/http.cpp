@@ -358,13 +358,18 @@ Response	DoSend(std::string url, map<string, string> &head, string method = "GET
 Response	requests::Get(std::string url,const map<string, string> &head,std::string cookie,const map<string, string> &options)
 {
 	BinaryData db;
-	return requests::request("GET", url, db, head, cookie, options); //request
+	return requests::request("GET", url, db, head, cookie, options);
 
 }
 
 Response	requests::Delete(std::string url, const map<string, string> &head, std::string cookie, const map<string, string> &options){
 	BinaryData db;
-	return requests::request("DELETE", url, db, head, cookie, options); //request
+	return requests::request("DELETE", url, db, head, cookie, options); 
+}
+
+Response	requests::Head(std::string url, const map<string, string> &head, std::string cookie, const map<string, string> &options){
+	BinaryData db;
+	return requests::request("HEAD", url, db, head, cookie, options); 
 }
 
 

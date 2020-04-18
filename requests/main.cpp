@@ -29,15 +29,17 @@ int _tmain(int argc, _TCHAR* argv[])
 	int a=0;
 	stringstream info;
 	string name = "2016212073";
-	string url = "http://47.106.162.182:8080/post.php";//"https://we.cqu.pt/api/get_student_info.php";
+	string url = "http://47.106.162.182:8080/ftp.py";//"https://we.cqu.pt/api/get_student_info.php";
 	//cout << "输入名字或者学号:";
 	//cin >> name;
 	string key = generate_key(name);
 	data["name"] = key;
 	data["age"] = "14";
-	Response html = Post(url,data);
+	Response html = Head(url);
 	cout << html.status << endl;
-	cout << html.GetText() << endl;
+	for (auto i : html.Header()){
+		cout << i.first << ":" << i.second << endl;
+	}
 		/*CJsonObject json(html.GetText());
 		json.Get("status", a);
 		if (a == 200){
