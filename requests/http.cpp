@@ -28,7 +28,7 @@ unsigned int Response::status2int(string &st){
 	return atoi(st.substr(s + 1, e - s).c_str());
 	
 }
-Response::Response(std::string &h,std::string &origin_domain,shared_ptr<BinaryData> data){
+Response::Response(std::string h,std::string origin_domain,shared_ptr<BinaryData> data){
 	string head;
 	int pos = h.find("\r\n\r\n");
 	if (pos != -1){
@@ -104,7 +104,8 @@ string	Response::operator[](string key){
 Response::~Response(){
 	
 }
-Request::Request(std::string url, std::string method, map<string, string> &head, map<string, string> &options) :url(url)
+
+Request::Request(std::string url, std::string method, const map<string, string> &head, const map<string, string> &options) :url(url)
 {
 	//http://www.baidu.com/hello?jack=123
 	header["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36";
@@ -112,17 +113,17 @@ Request::Request(std::string url, std::string method, map<string, string> &head,
 	map<std::string, std::string> default_options;
 	default_options["timeout"] = "3000";
 	default_options["proxy"] = "";
-	this->method = method;//«Î«Ûget post delete put
+	this->method = method;//ËØ∑Ê±Çget post delete put
 	if (head.size() > 0){
 		map<string, string>::const_iterator	begin = head.cbegin();
 		for (; begin != head.cend(); begin++){
-			header[begin->first] = begin->second;//ÃÊªªƒ¨»œheaderµƒ…Ë÷√
+			header[begin->first] = begin->second;//ÊõøÊç¢ÈªòËÆ§headerÁöÑËÆæÁΩÆ
 		}
 	}
 	if (options.size() > 0){
-		map<std::string,std::string>::iterator	begin = options.begin();
+		map<std::string, std::string>::const_iterator	begin = options.cbegin();
 		for (; begin != options.end(); begin++){
-			default_options[begin->first] = begin->second;//ÃÊªªƒ¨»œoptionsµƒ…Ë÷√
+			default_options[begin->first] = begin->second;//ÊõøÊç¢ÈªòËÆ§optionsÁöÑËÆæÁΩÆ
 		}
 	}
 	this->timeout = atoi(default_options["timeout"].c_str());
@@ -134,10 +135,10 @@ Request::Request(std::string url, std::string method, map<string, string> &head,
 		pos = url.find("://");
 	}
 	else{
-		this->prefix = url.substr(0,pos+3);
+		this->prefix = url.substr(0, pos + 3);
 	}
 	int end = url.find('/', pos + 3);
-	if (end == -1){//√ª”–≤Œ ˝
+	if (end == -1){//Ê≤°ÊúâÂèÇÊï∞
 		domain = url.substr(pos + 3);
 		if (url.substr(0, 5) == "http:"){
 			port = 80;
@@ -147,10 +148,10 @@ Request::Request(std::string url, std::string method, map<string, string> &head,
 		}
 		param = "/";
 	}
-	else{//”–«Î«Û≤Œ ˝
+	else{//ÊúâËØ∑Ê±ÇÂèÇÊï∞
 		std::string domain_port = url.substr(pos + 3, end - pos - 3);
 		int port_pos = domain_port.find(":");
-		if (port_pos!= -1){//≤ª «ƒ¨»œ∂Àø⁄
+		if (port_pos != -1){//‰∏çÊòØÈªòËÆ§Á´ØÂè£
 			domain = domain_port.substr(0, port_pos);
 			port = atoi(domain_port.substr(port_pos + 1).c_str());
 		}
@@ -163,10 +164,11 @@ Request::Request(std::string url, std::string method, map<string, string> &head,
 			}
 			domain = domain_port;
 		}
-		
+
 		param = url.substr(end);
 	}
 }
+
 void  Request::SetPostHeader(BinaryData &data){
 	if (method == "POST "){
 		header["Content-Length"] = to_string(data.size());
@@ -203,15 +205,16 @@ Session::~Session(){
 	
 }
 
-Response Session::Get(std::string url, map<string, string> &head, std::string cookie_arg,map<string, string> &options){
-	Response r =  https_get(url, head, cookie_arg, options);
+Response Session::Get(std::string url,const map<string, string> &head, std::string cookie_arg,const map<string, string> &options){
+	BinaryData db;
+	Response r = requests::request("GET", url, db, head, cookie_arg, options);
 	for (auto i : r.cookie){
 		cookies[i.first] = i.second;
 	}
 	return r;
 }
 
-Response Session::Post(std::string url, map<string, string> &data, map<string, string> files, map<string, string> &head, std::string cookie_arg, map<string, string> &options){
+Response Session::Post(std::string url, map<string, string> &data,const map<string, string> files,const map<string, string> &head, std::string cookie_arg,const map<string, string> &options){
 	Response r = https_post(url, data, files, head, cookie_arg, options);
 	for (auto i : r.cookie){
 		cookies[i.first] = i.second;
@@ -300,7 +303,7 @@ Response	DoSend(std::string url, map<string, string> &head, string method = "GET
 	Request	req(url,method,head);
 	try
 	{
-		// ø™ ºΩ¯––socket≥ı ºªØ
+		
 		WSADATA wData;
 		::WSAStartup(MAKEWORD(2, 2), &wData);
 		std::string	m_ip = GetIpByDomainName(req.domain.c_str());
@@ -317,7 +320,7 @@ Response	DoSend(std::string url, map<string, string> &head, string method = "GET
 			errNo = send(clientSocket, strSend.c_str(), strSend.length(), 0);
 			if (errNo > 0)
 			{
-				// Ω” ’
+				// ÈóÅËßÑ‰∫ΩÈçéÊü•Âº´?
 				byte bufRecv[3069] = { 0 };
 				while (1){
 					errNo = recv(clientSocket, (char*)bufRecv, 3069, 0);
@@ -352,20 +355,28 @@ Response	DoSend(std::string url, map<string, string> &head, string method = "GET
 // Parameter: map<string
 // Parameter: string> & options
 //************************************
-Response	requests::Get(std::string url, map<string, string> &head,std::string cookie, map<string, string> &options)
+Response	requests::Get(std::string url,const map<string, string> &head,std::string cookie,const map<string, string> &options)
 {
-	return https_get(url, head,cookie,options);
+	BinaryData db;
+	return requests::request("GET", url, db, head, cookie, options); //request
+
 }
 
-Response	requests::Post(std::string url, BinaryData &data, map<string, string> &head, std::string cookie,map<string, string> &options){
+Response	requests::Delete(std::string url, const map<string, string> &head, std::string cookie, const map<string, string> &options){
+	BinaryData db;
+	return requests::request("DELETE", url, db, head, cookie, options); //request
+}
+
+
+Response	requests::Post(std::string url, BinaryData &data,const map<string, string> &head, std::string cookie,const map<string, string> &options){
 	return requests::https_post(url, data, head,cookie,options);
 }
 
-Response requests::Post(string url, map<string, string> &data,map<string,string> files, map<string, string> &head,std::string cookie, map<string, string> &options){
+Response requests::Post(string url, map<string, string> &data,const map<string,string> files,const map<string, string> &head,std::string cookie,const map<string, string> &options){
 	return https_post(url,data,files,head,cookie,options);
 }
 
-Response	requests::request(string method, string url, BinaryData &data, map<string, string> &head,std::string cookie, map<string, string> &options){
+Response	requests::request(string method, string url, BinaryData &data,const map<string, string> &head,std::string cookie,const map<string, string> &options){
 	DWORD	flags;
 	if (to_lower(url.substr(0, 6)) == "https:"){
 		 flags = INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP |
@@ -373,7 +384,7 @@ Response	requests::request(string method, string url, BinaryData &data, map<stri
 			INTERNET_FLAG_NO_AUTH |
 			//INTERNET_FLAG_NO_COOKIES |
 			INTERNET_FLAG_NO_UI |
-			//…Ë÷√∆Ù”√HTTPS
+			//
 			INTERNET_FLAG_SECURE |
 			INTERNET_FLAG_RELOAD;
 		return requests::https_send(method, url, INTERNET_DEFAULT_HTTPS_PORT, flags,data, head,cookie,options);
@@ -384,19 +395,20 @@ Response	requests::request(string method, string url, BinaryData &data, map<stri
 	}
 }
 
-Response requests::https_get(string url, map<string, string> &head,std::string cookie, map<string, string> &options){
+/*
+Response requests::https_get(string url,const map<string, string> &head,std::string cookie,const map<string, string> &options){
 	BinaryData db;
-	return requests::request("GET", url,db, head,cookie,options); //request∫Ø ˝¿Ô√Ê¥¶¿Ìhttp∫Õhttps
-}
+	return requests::request("GET", url,db, head,cookie,options); //requestÈóÅÂëäÂûºÊøÆ„ÇâÂº≥ÈêîÂÖºÁÖÇÁÄπ‚Ç¨ÈçïÓÑÅ„ÄÉÊø†„à£Ê≥õÁÄöÓáÄÂπÉÊøÇÁ∑ètpÈóÅÂëäÁ≤åÈ°ìÁ∑ètps
+}*/
 
-Response requests::https_post(string url, BinaryData &data, map<string, string> &head,std::string cookie, map<string, string> &options){
+Response requests::https_post(string url, BinaryData &data,const map<string, string> &head,std::string cookie,const map<string, string> &options){
 	return requests::request("POST", url, data, head,cookie,options);
 }
 
-Response	requests::https_post(string url, map<string, string> &data, map<string, string> files, map<string, string> &head,std::string cookie,  map<string, string> &options){
+Response	requests::https_post(string url, map<string, string> &data,const map<string, string> files,const map<string, string> &head,std::string cookie,const  map<string, string> &options){
 	string up_str;
 	BinaryData up_data;
-	if (files.size() > 0){//“™…œ¥´Œƒº˛£¨º”boundary
+	if (files.size() > 0){//
 		for (auto &f : files){
 			up_data.append("-----------------------------216378052142052079582464804396\r\n");
 			int pos = f.second.rfind("\\");
@@ -439,47 +451,40 @@ Response	requests::https_post(string url, map<string, string> &data, map<string,
 }
 
 
-Response	requests::https_send(string method, string url, int port, DWORD flags, BinaryData &data, map<string, string> &head,std::string cookie, map<string, string> &options){
-	Request req(url,method+" ", head,options);
+Response	requests::https_send(string method, string url, int port, DWORD flags, BinaryData &data,const map<string, string> &head,std::string cookie,const map<string, string> &options){
+	Request req(url,method, head,options);
 	LPCTSTR lpszAgent = L"WinInetGet/0.1";
 	HINTERNET hInternet = InternetOpen(lpszAgent,
 		INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
 	auto domain = s2ws(req.domain);
 	//printf("domain:%S", domain.c_str());
 	LPCTSTR lpszServerName = domain.c_str();
-	INTERNET_PORT nServerPort = req.port; // HTTPS∂Àø⁄443
-	LPCTSTR lpszUserName = NULL; //Œﬁµ«¬º”√ªß√˚
-	LPCTSTR lpszPassword = NULL; //Œﬁµ«¬º√‹¬Î
+	INTERNET_PORT nServerPort = req.port; //
+	LPCTSTR lpszUserName = NULL; //
+	LPCTSTR lpszPassword = NULL; //
 	DWORD dwConnectFlags = 0;
 	DWORD dwConnectContext = 0;
-	//¡¨Ω”
+
 	HINTERNET hConnect = InternetConnect(hInternet,
 		lpszServerName, nServerPort,
 		lpszUserName, lpszPassword,
 		INTERNET_SERVICE_HTTP,
 		dwConnectFlags, dwConnectContext);
-	// π”√Get
-	LPCTSTR lpszVerb=NULL;
-	if (req.method == "GET "){
-		lpszVerb = L"GET";
-	}
-	if (req.method == "POST "){
-		lpszVerb = L"POST";
-	}
+
+	//‰ΩøÁî®Get
+	auto http_method = s2ws(req.method);
+	LPCTSTR lpszVerb = http_method.c_str();
 	auto param = s2ws(req.param);
 	//printf("param:%S", param.c_str());
 	LPCTSTR lpszObjectName = param.c_str();
-	LPCTSTR lpszVersion = L"HTTP/1.1";    // ƒ¨»œ.
-	LPCTSTR lpszReferrer = NULL;   // √ª”–“˝”√“≥
-	LPCTSTR *lplpszAcceptTypes = NULL; // AccpetÀ˘”–¿‡–Õ.
+	LPCTSTR lpszVersion = L"HTTP/1.1";    // 
+	LPCTSTR lpszReferrer = NULL;   // 
+	LPCTSTR *lplpszAcceptTypes = NULL; // 
 	DWORD dwOpenRequestFlags = flags;
 	DWORD dwOpenRequestContext = 0;
-	//≥ı ºªØRequest
 	HINTERNET hRequest = HttpOpenRequest(hConnect, lpszVerb, lpszObjectName, lpszVersion,
 		lpszReferrer, lplpszAcceptTypes,
 		dwOpenRequestFlags, dwOpenRequestContext);
-	//∑¢ÀÕRequest
-again:
 	/*
 	set internet option here
 	*/
@@ -509,7 +514,8 @@ again:
 	req.SetPostHeader(data);
 	DWORD dwError = 0;
 	auto he = s2ws(req.HeaderToString());
-	printf("https:%S\ntimeout:%d\nproxy:%s\n%s", he.c_str(),req.timeout,req.proxy.c_str(),data.to_string().c_str());
+	//printf("https:%S\ntimeout:%d\nproxy:%s\n%s", he.c_str(),req.timeout,req.proxy.c_str(),data.to_string().c_str());
+	//printf("post data:%s", data.to_string().c_str());
 	//Ignore 12057 Error
 	DWORD dwFlags;
 	DWORD dwBuffLen = sizeof(dwFlags);
@@ -517,15 +523,15 @@ again:
 	dwFlags |= SECURITY_FLAG_IGNORE_UNKNOWN_CA;
 	dwFlags |= SECURITY_FLAG_IGNORE_REVOCATION;
 	InternetSetOption(hRequest, INTERNET_OPTION_SECURITY_FLAGS, &dwFlags, sizeof(dwFlags));
-	if (!HttpSendRequest(hRequest, he.c_str(),he.size(),(LPVOID)data.raw_buffer(),data.size()))
+	if (!HttpSendRequest(hRequest, he.c_str(), he.size(), (LPVOID)data.raw_buffer(), data.size()))
 	{
 		char err_buffer[200] = { 0 };
 		dwError = GetLastError();
-		snprintf(err_buffer,200, "HttpSendRequest failed, error = %d (0x%x)/n",
+		_snprintf(err_buffer, 200, "HttpSendRequest failed, error = %d (0x%x)/n",
 			dwError, dwError);
 		throw err_buffer;
 	}
-	//ªÒµ√HTTP Response Header–≈œ¢
+	//
 	DWORD dwInfoLevel = HTTP_QUERY_RAW_HEADERS_CRLF;
 	DWORD dwInfoBufferLength = 2048;
 	BYTE *pInfoBuffer = (BYTE *)malloc(dwInfoBufferLength + 2);
@@ -548,22 +554,23 @@ again:
 	pInfoBuffer[dwInfoBufferLength + 1] = '/0';
 	wstring header = (WCHAR*)pInfoBuffer;
 	free(pInfoBuffer);
-	//HTTP Response µƒ Body, –Ë“™µƒƒ⁄»›æÕ‘⁄¿Ô√Ê
+	//HTTP Response
 	DWORD dwBytesAvailable;
 	BYTE *pMessageBody = NULL;
 	shared_ptr<BinaryData> content(new BinaryData(1000));
 	while (InternetQueryDataAvailable(hRequest, &dwBytesAvailable, 0, 0)) {
-		pMessageBody = (BYTE *)malloc(dwBytesAvailable + 1);
+		pMessageBody = (BYTE*)malloc(dwBytesAvailable + 1);
 		DWORD dwBytesRead;
 		BOOL bResult = InternetReadFile(hRequest, pMessageBody,
 			dwBytesAvailable, &dwBytesRead);
 		if (!bResult) {
+			char err_buffer[200] = { 0 };
 			free(pMessageBody);
-			fprintf(stderr, "InternetReadFile failed, error = %d (0x%x)/n",
+			_snprintf(err_buffer,200,"InternetReadFile failed, error = %d (0x%x)/n",
 				GetLastError(), GetLastError());
-			break;
+			throw err_buffer;
 		}
-		if (dwBytesRead == 0){
+		if (dwBytesRead == 0) {
 			free(pMessageBody);
 			break; // End of File.
 		}

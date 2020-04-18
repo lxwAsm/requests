@@ -11,9 +11,6 @@
 #ifndef CJSONOBJECT_HPP_
 #define CJSONOBJECT_HPP_
 
-#if _MSC_VER
-#define snprintf _snprintf
-#endif
 
 #include <stdio.h>
 #include <stddef.h>

@@ -29,14 +29,16 @@ int _tmain(int argc, _TCHAR* argv[])
 	int a=0;
 	stringstream info;
 	string name = "2016212073";
-	string url = "https://we.cqu.pt/api/get_student_info.php";
+	string url = "http://47.106.162.182:8080/post.php";//"https://we.cqu.pt/api/get_student_info.php";
 	//cout << "输入名字或者学号:";
 	//cin >> name;
 	string key = generate_key(name);
-	data["key"] = key;
+	data["name"] = key;
+	data["age"] = "14";
 	Response html = Post(url,data);
-	if (html.status == 200){
-		CJsonObject json(html.GetText());
+	cout << html.status << endl;
+	cout << html.GetText() << endl;
+		/*CJsonObject json(html.GetText());
 		json.Get("status", a);
 		if (a == 200){
 			info << "姓名:" << json["data"]["rows"][0]("xm") << "\n";
@@ -48,8 +50,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			info << "状态:" << json["data"]["rows"][0]("xjzt") << "\n";
 			info << "班级代号:" << json["data"]["rows"][0]("bj") << "\n";
 			cout << info.str();
-		}
-	}
+		}*/
 	cin >> a;
 	return 0;
 }

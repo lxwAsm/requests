@@ -1,4 +1,4 @@
-﻿生成启动时间为 2020/4/17 16:47:58。
+﻿生成启动时间为 2020/4/18 14:01:21。
 项目“\\vmware-host\Shared Folders\文稿\Visual Studio 2013\requests\requests\requests.vcxproj”在节点 2 上(Build 个目标)。
 ClCompile:
   C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _LIB /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
@@ -15,4 +15,4 @@ Link:
 
 生成成功。
 
-已用时间 00:00:02.29
+已用时间 00:00:02.13

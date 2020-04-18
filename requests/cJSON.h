@@ -22,7 +22,6 @@
 
 #ifndef cJSON__h
 #define cJSON__h
-
 #include <stdint.h>
 
 typedef int int32;
