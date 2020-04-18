@@ -1,4 +1,6 @@
->关闭预编译头：项目->属性->C/C++->预编译头->不使用预编译头
+>关闭预编译头：项目->属性->C/C++->预编译头->不使用预编译头  
+
+[安装编译演示视频](https://www.bilibili.com/video/bv1gV411Z7fT)  
 ### 入门
 >#include \<iostream>  
 >#include \<string>  
