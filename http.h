@@ -32,6 +32,7 @@ namespace requests{
 		const byte* raw_buffer();
 		int	 size();
 		std::string	to_string();
+		std::string user_data;
 	private:
 		std::vector<byte>	data;
 	};
@@ -88,13 +89,16 @@ namespace requests{
 	
 	std::string GetIpByDomainName(const char *szHost);
 	Response	Get(std::string url,const map<string, string> &head = map<string, string>(),std::string cookie="",const map<string, string> &options = map<string, string>());
-	//Response	Get(std::string url, map<string, string> &head = map<string, string>(), map<std::string, std::string> &cookie = map<string, string>(), map<string, string> &options = map<string, string>());
+	Response	Delete(std::string url, const map<string, string> &head = map<string, string>(), std::string cookie = "", const map<string, string> &options = map<string, string>());
+	Response	Head(std::string url, const map<string, string> &head = map<string, string>(), std::string cookie = "", const map<string, string> &options = map<string, string>());
+	Response	Options(std::string url, const map<string, string> &head = map<string, string>(), std::string cookie = "", const map<string, string> &options = map<string, string>());
+	Response	Put(std::string url, const std::string filepath,const map<string, string> &head = map<string, string>(), std::string cookie = "", const map<string, string> &options = map<string, string>());
 	Response	Post(std::string url, map<string, string> &data, map<string, string> files = map<string, string>(),const map<string, string> &head = map<string, string>(),std::string cookie="",const map<string, string> &options = map<string, string>());
 	Response	Post(std::string url, BinaryData &data,const map<string, string> &head = map<string, string>(),std::string cookie="",const map<string, string> &options = map<string, string>());
-	Response    https_get(string url, const map<string, string> &head = map<string, string>(),std::string cookie="",const map<string, string> &options = map<string, string>());
 	Response	https_post(string url, BinaryData &data,const  map<string, string> &head = map<string, string>(),std::string cookie="",const map<string,string> &options = map<string, string>());
 	Response	https_post(string url, map<string, string> &data, map<string, string> files,const map<string, string> &head = map<string, string>(),std::string cookie="",const map<string, string> &options = map<string, string>());
 	Response	request(string method, string url, BinaryData &data,const map<string, string> &head = map<string, string>(),std::string cookie="",const map<string, string> &options = map<string, string>());
 	Response	https_send(string method, string url, int port, DWORD flags, BinaryData &data,const map<string, string> &head = map<string, string>(),std::string cookie="",const map<string, string> &options = map<string, string>());
+	std::string get_content_type(string &filename);
 }
 #endif
