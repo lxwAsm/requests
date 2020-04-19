@@ -30,8 +30,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	//options["timeout"] = "3000";
 	data["key"] = "letmeupload";
 	data["submit"] = "Submit";
-	files["file"] = "C:\\Users\\jack\\Desktop\\git-for-windows.ico";
-	Response resp = Post("http://47.106.162.182:8080/save.php", data, files);
+	files["file"] = "C:\\Users\\jack\\Desktop\\key.txt";
+	Response resp = Put("http://httpbin.org/put", "C:\\Users\\jack\\Desktop\\key.txt");
 	cout << resp.status << endl;
 	cout << resp.GetText() << endl;
 	cin >> a;

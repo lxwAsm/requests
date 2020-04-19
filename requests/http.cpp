@@ -170,7 +170,7 @@ Request::Request(std::string url, std::string method, const map<string, string> 
 }
 
 void  Request::SetPostHeader(BinaryData &data){
-	if (method == "POST "){
+	if (method == "POST"){
 		header["Content-Length"] = to_string(data.size());
 		if (data.find("--216378052142052079582464804396") != -1){
 			header["Content-Type"] = "multipart/form-data; boundary=---------------------------216378052142052079582464804396";
@@ -178,7 +178,12 @@ void  Request::SetPostHeader(BinaryData &data){
 		else{
 			header["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
 		}
-		
+		return;
+	}
+	if (method == "PUT"){
+		header["Content-Length"] = to_string(data.size());
+		std::string filetype = get_content_type(data.user_data);
+		header["Content-Type"] = filetype;
 	}
 }
 
@@ -377,6 +382,24 @@ Response	requests::Options(std::string url, const map<string, string> &head, std
 
 }
 
+Response	requests::Put(std::string url, const std::string filepath, const map<string, string> &head, std::string cookie, const map<string, string> &options){
+	ifstream in(filepath, ios::in | ios::binary | ios::ate);
+	BinaryData up_data;
+	if (!in.is_open()){
+		throw "file open failed";
+	}
+	char * buffer;
+	long size;
+	size = in.tellg();
+	in.seekg(0, ios::beg);
+	buffer = new char[size];
+	in.read(buffer, size);
+	in.close();
+	up_data.append((byte*)buffer, size);
+	delete[] buffer;
+	up_data.user_data = filepath;
+	return requests::request("PUT", url, up_data, head, cookie, options);
+}
 Response	requests::Post(std::string url, BinaryData &data,const map<string, string> &head, std::string cookie,const map<string, string> &options){
 	return requests::https_post(url, data, head,cookie,options);
 }
@@ -409,7 +432,7 @@ Response requests::https_post(string url, BinaryData &data,const map<string, str
 	return requests::request("POST", url, data, head,cookie,options);
 }
 
-std::string get_content_type(string &filename){
+std::string requests::get_content_type(string &filename){
 	std::map<std::string, std::string> map_type = {//
 			{ ".pdf", "application/pdf" },
 			{ ".js", "application/ecmascript" },
@@ -491,7 +514,7 @@ Response	requests::https_post(string url, map<string, string> &data,const map<st
 
 
 Response	requests::https_send(string method, string url, int port, DWORD flags, BinaryData &data,const map<string, string> &head,std::string cookie,const map<string, string> &options){
-	Request req(url,method+" ", head,options);
+	Request req(url,method, head,options);
 	LPCTSTR lpszAgent = L"WinInetGet/0.1";
 	HINTERNET hInternet = InternetOpen(lpszAgent,
 		INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
@@ -524,9 +547,7 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 	HINTERNET hRequest = HttpOpenRequest(hConnect, lpszVerb, lpszObjectName, lpszVersion,
 		lpszReferrer, lplpszAcceptTypes,
 		dwOpenRequestFlags, dwOpenRequestContext);
-	/*
-	set internet option here
-	*/
+
 	if (hRequest == NULL){
 		char err_buffer[200] = { 0 };
 		dwError = GetLastError();
@@ -534,6 +555,7 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 			dwError, dwError);
 		throw err_buffer;
 	}
+	//set internet option here
 	DWORD dwTimeOut = req.timeout;
 	InternetSetOption(hRequest, INTERNET_OPTION_CONNECT_TIMEOUT, &dwTimeOut, sizeof(dwTimeOut));
 	if (req.proxy.size() > 0){
