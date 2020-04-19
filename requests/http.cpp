@@ -320,7 +320,6 @@ Response	DoSend(std::string url, map<string, string> &head, string method = "GET
 			errNo = send(clientSocket, strSend.c_str(), strSend.length(), 0);
 			if (errNo > 0)
 			{
-				// 闁规亽鍎查弫?
 				byte bufRecv[3069] = { 0 };
 				while (1){
 					errNo = recv(clientSocket, (char*)bufRecv, 3069, 0);
@@ -405,14 +404,39 @@ Response	requests::request(string method, string url, BinaryData &data,const map
 	}
 }
 
-/*
-Response requests::https_get(string url,const map<string, string> &head,std::string cookie,const map<string, string> &options){
-	BinaryData db;
-	return requests::request("GET", url,db, head,cookie,options); //request闁告垼濮ら弳鐔兼煂瀹€鍕〃濠㈣泛瀚幃濂総tp闁告粌顓総tps
-}*/
 
 Response requests::https_post(string url, BinaryData &data,const map<string, string> &head,std::string cookie,const map<string, string> &options){
 	return requests::request("POST", url, data, head,cookie,options);
+}
+
+std::string get_content_type(string &filename){
+	std::map<std::string, std::string> map_type = {//
+			{ ".pdf", "application/pdf" },
+			{ ".js", "application/ecmascript" },
+			{ ".json", "application/json" },
+			{ ".zip", "application/x-zip-compressed" },
+			{ ".txt", "text/plain" },
+			{ ".mp3", "audio/mpeg" },
+			{ ".gif", "image/gif" },
+			{ ".c", "text/plain" },
+			{ ".h", "text/plain" },
+			{ ".py", "text/x-python-script" },
+			{ ".jpg", "image/jpeg" }
+	};
+	int index = filename.rfind('.');
+	if (index == -1){
+		return "application/octet-stream";
+	}
+	else{
+		std::string file_type = filename.substr(index);
+		std::string result = map_type[file_type];
+		if (result.size() > 0){
+			return result;
+		}
+		else{
+			return "application/octet-stream";//unkonw file type
+		}
+	}
 }
 
 Response	requests::https_post(string url, map<string, string> &data,const map<string, string> files,const map<string, string> &head,std::string cookie,const  map<string, string> &options){
@@ -430,10 +454,15 @@ Response	requests::https_post(string url, map<string, string> &data,const map<st
 				filename = f.second;
 			}
 			up_data.append("Content-Disposition: form-data; name=\"" + f.first + "\"" + "; filename=\"" + filename + "\"\r\n");
-			up_data.append("Content-Type: text/x-python-script\r\n\r\n");
+			std::string file_type = get_content_type(filename);
+			up_data.append("Content-Type: "+file_type+"\r\n\r\n");
 			char * buffer;
 			long size;
-			ifstream in(filename, ios::in | ios::binary | ios::ate);
+			ifstream in(f.second, ios::in | ios::binary | ios::ate);
+			if (!in.is_open()){
+				throw "file open failed";
+			}
+
 			size = in.tellg();
 			in.seekg(0, ios::beg);
 			buffer = new char[size];

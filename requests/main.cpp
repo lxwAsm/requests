@@ -26,31 +26,14 @@ int _tmain(int argc, _TCHAR* argv[])
 	map<string, string> options;
 	map<string, string> data;
 	map<string, string> files;
-	int a=0;
-	stringstream info;
-	string name = "2016212073";
-	string url = "https://blog.csdn.net/leikezhu1981/article/details/7402272";//"https://we.cqu.pt/api/get_student_info.php";
-	//cout << "输入名字或者学号:";
-	//cin >> name;
-	string key = generate_key(name);
-	data["key"] = key;
-	Response html = Options(url);
-	cout << html.status << endl;
-	for (auto i : html.Header()){
-		cout << i.first << ":" << i.second << endl;
-	}
-	/*json.Get("status", a);
-	//if (a == 200){
-		info << "姓名:" << json["data"]["rows"][0]("xm") << "\n";
-		info << "出生日期:" << json["data"]["rows"][0]("csrq") << "\n";
-		info << "学号:" << json["data"]["rows"][0]("xh") << "\n";
-		info << "学院:" << json["data"]["rows"][0]("yxm") << "\n";
-		info << "专业:" << json["data"]["rows"][0]("zymEn") << "\n";
-		info << "入学时间:" << json["data"]["rows"][0]("nj") << "\n";
-		info << "状态:" << json["data"]["rows"][0]("xjzt") << "\n";
-		info << "班级代号:" << json["data"]["rows"][0]("bj") << "\n";
-		cout << info.str();
-	//}*/
+	int a;
+	//options["timeout"] = "3000";
+	data["key"] = "letmeupload";
+	data["submit"] = "Submit";
+	files["file"] = "C:\\Users\\jack\\Desktop\\git-for-windows.ico";
+	Response resp = Post("http://47.106.162.182:8080/save.php", data, files);
+	cout << resp.status << endl;
+	cout << resp.GetText() << endl;
 	cin >> a;
 	return 0;
 }
