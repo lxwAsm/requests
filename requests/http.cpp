@@ -512,6 +512,70 @@ Response	requests::https_post(string url, map<string, string> &data,const map<st
 	return requests::request("POST", url, up_data, head,cookie,options);
 }
 
+std::string requests::http_err2str(DWORD code){
+	static map<DWORD, std::string> err_code = {
+			{ 12001, "ERROR_INTERNET_OUT_OF_HANDLES No more handles could be generated at this time." },
+			{ 12002, "ERROR_INTERNET_TIMEOUT The request has timed out." },
+			{ 12003, "ERROR_INTERNET_EXTENDED_ERROR An extended error was returned from the server., This is typically a string or buffer containing a verbose error message. Call InternetGetLastResponseInfo to retrieve the error text." },
+			{ 12004, "ERROR_INTERNET_INTERNAL_ERROR An internal error has occurred." },
+			{ 12005, "ERROR_INTERNET_INVALID_URL The URL is invalid." },
+			{ 12006, "ERROR_INTERNET_UNRECOGNIZED_SCHEME The URL scheme could not be recognized or is not supported." },
+			{ 12007, "ERROR_INTERNET_NAME_NOT_RESOLVED The server name could not be resolved." },
+			{ 12008, "ERROR_INTERNET_PROTOCOL_NOT_FOUND The requested protocol could not be located." },
+			{ 12009, "ERROR_INTERNET_INVALID_OPTION A request to InternetQueryOption or InternetSetOption specified an invalid option value." },
+			{ 12010, "ERROR_INTERNET_BAD_OPTION_LENGTH The length of an option supplied to InternetQueryOption or InternetSetOption is incorrect for the type of option specified." },
+			{ 12011, "ERROR_INTERNET_OPTION_NOT_SETTABLE The request option cannot be set, only queried." },
+			{ 12012, "ERROR_INTERNET_SHUTDOWN The Win32 Internet function support is being shut down or unloaded." },
+			{ 12013, "ERROR_INTERNET_INCORRECT_USER_NAME The request to connect and log on to an FTP server could not be completed because the supplied user name is incorrect." },
+			{ 12014, "ERROR_INTERNET_INCORRECT_PASSWORD The request to connect and log on to an FTP server could not be completed because the supplied password is incorrect." },
+			{ 12015, "ERROR_INTERNET_LOGIN_FAILURE The request to connect to and log on to an FTP server failed." },
+			{ 12016, "ERROR_INTERNET_INVALID_OPERATION The requested operation is invalid." },
+			{ 12017, "ERROR_INTERNET_OPERATION_CANCELLED The operation was canceled, usually because the handle on which the request was operating was closed before the operation completed." },
+			{ 12018, "ERROR_INTERNET_INCORRECT_HANDLE_TYPE The type of handle supplied is incorrect for this operation." },
+			{ 12019, "ERROR_INTERNET_INCORRECT_HANDLE_STATE The requested operation cannot be carried out because the handle supplied is not in the correct state." },
+			{ 12020, "ERROR_INTERNET_NOT_PROXY_REQUEST The request cannot be made via a proxy." },
+			{ 12021, "ERROR_INTERNET_REGISTRY_VALUE_NOT_FOUND A required registry value could not be located." },
+			{ 12022, "ERROR_INTERNET_BAD_REGISTRY_PARAMETER A required registry value was located but is an incorrect type or has an invalid value." },
+			{ 12023, "ERROR_INTERNET_NO_DIRECT_ACCESS Direct network access cannot be made at this time." },
+			{ 12024, "ERROR_INTERNET_NO_CONTEXT An asynchronous request could not be made because a zero context value was supplied." },
+			{ 12025, "ERROR_INTERNET_NO_CALLBACK An asynchronous request could not be made because a callback function has not been set." },
+			{ 12026, "ERROR_INTERNET_REQUEST_PENDING The required operation could not be completed because one or more requests are pending." },
+			{ 12027, "ERROR_INTERNET_INCORRECT_FORMAT The format of the request is invalid." },
+			{ 12028, "ERROR_INTERNET_ITEM_NOT_FOUND The requested item could not be located." },
+			{ 12029, "ERROR_INTERNET_CANNOT_CONNECT The attempt to connect to the server failed." },
+			{ 12030, "ERROR_INTERNET_CONNECTION_ABORTED The connection with the server has been terminated." },
+			{ 12031, "ERROR_INTERNET_CONNECTION_RESET The connection with the server has been reset." },
+			{ 12032, "ERROR_INTERNET_FORCE_RETRY Calls for the Win32 Internet function to redo the request." },
+			{ 12033, "ERROR_INTERNET_INVALID_PROXY_REQUEST The request to the proxy was invalid." },
+			{ 12036, "ERROR_INTERNET_HANDLE_EXISTS The request failed because the handle already exists." },
+			{ 12037, "ERROR_INTERNET_SEC_CERT_DATE_INVALID SSL certificate date that was received from the server is bad.The certificate is expired."},  
+			{ 12038, "ERROR_INTERNET_SEC_CERT_CN_INVALID SSL certificate common name (host name field) is incorrect., For example, if you entered www.server.com and the common name on the certificate says www.,different.com."},  
+			{ 12039, "ERROR_INTERNET_HTTP_TO_HTTPS_ON_REDIR The application is moving from a non-SSL to an SSL connection because of a redirect."},
+			{ 12040, "ERROR_INTERNET_HTTPS_TO_HTTP_ON_REDIR The application is moving from an SSL to an non-SSL connection because of a redirect." },
+			{ 12041, "ERROR_INTERNET_MIXED_SECURITY Indicates that the content is not entirely secure. Some of the content being viewed may have come from unsecured servers."},   
+			{ 12042, "ERROR_INTERNET_CHG_POST_IS_NON_SECURE The application is posting and attempting to change multiple lines of text on a server that is not secure."},
+			{ 12043, "ERROR_INTERNET_POST_IS_NON_SECURE The application is posting data to a server that is not secure." },
+			{ 12110, "ERROR_FTP_TRANSFER_IN_PROGRESS The requested operation cannot be made on the FTP session handle because an operation is already in progress." },
+			{ 12111, "ERROR_FTP_DROPPED The FTP operation was not completed because the session was aborted." },
+			{ 12130, "ERROR_GOPHER_PROTOCOL_ERROR An error was detected while parsing data returned from the gopher server." },
+			{ 12131, "ERROR_GOPHER_NOT_FILE The request must be made for a file locator." },
+			{ 12132, "ERROR_GOPHER_DATA_ERROR An error was detected while receiving data from the gopher server." },
+			{ 12133, "ERROR_GOPHER_END_OF_DATA The end of the data has been reached." },
+			{ 12134, "ERROR_GOPHER_INVALID_LOCATOR The supplied locator is not valid." },
+			{ 12135, "ERROR_GOPHER_INCORRECT_LOCATOR_TYPE The type of the locator is not correct for this operation." },
+			{ 12136, "ERROR_GOPHER_NOT_GOPHER_PLUS The requested operation can only be made against a Gopher+ server or with a locator that specifies a Gopher+ operation." },
+			{ 12137, "ERROR_GOPHER_ATTRIBUTE_NOT_FOUND The requested attribute could not be located." },
+			{ 12138, "ERROR_GOPHER_UNKNOWN_LOCATOR The locator type is unknown." },
+			{ 12150, "ERROR_HTTP_HEADER_NOT_FOUND The requested header could not be located." },
+			{ 12151, "ERROR_HTTP_DOWNLEVEL_SERVER The server did not return any headers." },
+			{ 12152, "ERROR_HTTP_INVALID_SERVER_RESPONSE The server response could not be parsed." },
+			{ 12153, "ERROR_HTTP_INVALID_HEADER The supplied header is invalid." },
+			{ 12154, "ERROR_HTTP_INVALID_QUERY_REQUEST The request made to HttpQueryInfo is invalid." },
+			{ 12155, "ERROR_HTTP_HEADER_ALREADY_EXISTS The header could not be added because it already exists." },
+			{ 12156, "ERROR_HTTP_REDIRECT_FAILED The redirection failed because either the scheme changed (for example, HTTP to FTP) or all attempts made to redirect failed (default is five attempts)." },
+	};
+	return err_code[code];
+}
 
 Response	requests::https_send(string method, string url, int port, DWORD flags, BinaryData &data,const map<string, string> &head,std::string cookie,const map<string, string> &options){
 	Request req(url,method, head,options);
@@ -541,7 +605,7 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 	LPCTSTR lpszObjectName = param.c_str();
 	LPCTSTR lpszVersion = L"HTTP/1.1";    // 
 	LPCTSTR lpszReferrer = NULL;   // 
-	LPCTSTR *lplpszAcceptTypes = NULL; // 
+	LPCTSTR *lplpszAcceptTypes = NULL; //
 	DWORD dwOpenRequestFlags = flags;
 	DWORD dwOpenRequestContext = 0;
 	HINTERNET hRequest = HttpOpenRequest(hConnect, lpszVerb, lpszObjectName, lpszVersion,
@@ -551,8 +615,9 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 	if (hRequest == NULL){
 		char err_buffer[200] = { 0 };
 		dwError = GetLastError();
-		_snprintf(err_buffer, 200, "HttpOpenRequest failed, error = %d (0x%x)/n",
-			dwError, dwError);
+		std::string err_info = http_err2str(dwError);
+		_snprintf(err_buffer, 200, "HttpOpenRequest failed,error = %d (%s)\n",
+			dwError, err_info.c_str());
 		throw err_buffer;
 	}
 	//set internet option here
@@ -594,8 +659,9 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 	{
 		char err_buffer[200] = { 0 };
 		dwError = GetLastError();
-		_snprintf(err_buffer, 200, "HttpSendRequest failed, error = %d (0x%x)/n",
-			dwError, dwError);
+		std::string err_info = http_err2str(dwError);
+		_snprintf(err_buffer, 200, "HttpSendRequest failed,error = %d (%s)\n",
+			dwError, err_info.c_str());
 		throw err_buffer;
 	}
 	//
@@ -609,12 +675,12 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 			pInfoBuffer = (BYTE *)malloc(dwInfoBufferLength + 2);
 		}
 		else {
-			shared_ptr<BinaryData> err_info(new BinaryData(500));
-			err_info->append("HttpQueryInfo Timeout");
-			std::string err_header;
-			Response	resp(err_header,req.prefix+req.domain,err_info);
-			resp.status = 0;
- 			return resp;
+			char err_buffer[200] = { 0 };
+			dwError = GetLastError();
+			std::string err_info = http_err2str(dwError);
+			_snprintf(err_buffer, 200, "HttpQueryInfo failed,error = %d (%s)\n",
+				dwError, err_info.c_str());
+			throw err_buffer;
 		}
 	}
 	pInfoBuffer[dwInfoBufferLength] = '/0';

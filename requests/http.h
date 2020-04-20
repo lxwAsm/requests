@@ -100,5 +100,6 @@ namespace requests{
 	Response	request(string method, string url, BinaryData &data,const map<string, string> &head = map<string, string>(),std::string cookie="",const map<string, string> &options = map<string, string>());
 	Response	https_send(string method, string url, int port, DWORD flags, BinaryData &data,const map<string, string> &head = map<string, string>(),std::string cookie="",const map<string, string> &options = map<string, string>());
 	std::string get_content_type(string &filename);
+	std::string http_err2str(DWORD code);
 }
 #endif
