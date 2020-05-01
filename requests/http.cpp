@@ -170,7 +170,7 @@ Request::Request(std::string url, std::string method, const map<string, string> 
 }
 
 void  Request::SetPostHeader(BinaryData &data){
-	if (method == "POST"){
+	if (method == "POST" && data.size()>0){
 		header["Content-Length"] = to_string(data.size());
 		if (data.find("--216378052142052079582464804396") != -1){
 			header["Content-Type"] = "multipart/form-data; boundary=---------------------------216378052142052079582464804396";
@@ -276,7 +276,7 @@ BinaryData::~BinaryData()
 
 }
 
-//-----------end binary----------
+//-----------EndBinary----------------------
 
 std::string requests::GetIpByDomainName(const char *szHost)
 {
@@ -408,6 +408,12 @@ Response requests::Post(string url, map<string, string> &data,const map<string,s
 	return https_post(url,data,files,head,cookie,options);
 }
 
+Response requests::Post(std::string url, std::string str_data, const map<string, string> &head, std::string cookie, const map<string, string> &options){
+	BinaryData bd;
+	bd.append(str_data);
+	return requests::https_post(url, bd, head, cookie, options);
+}
+
 Response	requests::request(string method, string url, BinaryData &data,const map<string, string> &head,std::string cookie,const map<string, string> &options){
 	DWORD	flags;
 	if (to_lower(url.substr(0, 6)) == "https:"){
@@ -416,7 +422,6 @@ Response	requests::request(string method, string url, BinaryData &data,const map
 			INTERNET_FLAG_NO_AUTH |
 			//INTERNET_FLAG_NO_COOKIES |
 			INTERNET_FLAG_NO_UI |
-			//
 			INTERNET_FLAG_SECURE |
 			INTERNET_FLAG_RELOAD;
 		return requests::https_send(method, url, INTERNET_DEFAULT_HTTPS_PORT, flags,data, head,cookie,options);

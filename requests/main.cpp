@@ -27,13 +27,19 @@ int _tmain(int argc, _TCHAR* argv[])
 	map<string, string> data;
 	map<string, string> files;
 	int a;
-	//options["timeout"] = "3000";
+	options["timeout"] = "3000";
 	data["key"] = "letmeupload";
 	data["submit"] = "Submit";
 	files["file"] = "C:\\Users\\jack\\Desktop\\key.txt";
-	Response resp = Put("http://httpbin.org/put", "C:\\Users\\jack\\Desktop\\key.txt");
-	cout << resp.status << endl;
-	cout << resp.GetText() << endl;
+	try{
+		Response resp = Post("http://httpbin.org/post", "name=lx&age=24",header,"",options);
+		cout << resp.status << endl;
+		cout << resp.GetText() << endl;
+	}
+	catch (const char *msg){
+		cout << msg << endl;
+	}
+
 	cin >> a;
 	return 0;
 }
