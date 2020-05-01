@@ -1,5 +1,8 @@
+>Visual Stdio设置：  
 >关闭预编译头：项目->属性->C/C++->预编译头->不使用预编译头  
 >关闭安全警告：项目->属性->C/C++->预处理器->预处理器定义->添加 _CRT_SECURE_NO_WARNINGS  
+
+>目前实现的http动作有：GET POST HEAD OPTIONS PUT DELETE  
 
 [安装编译演示视频](https://www.bilibili.com/video/bv1gV411Z7fT)  
 ### 入门
