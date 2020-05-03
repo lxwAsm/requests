@@ -31,7 +31,7 @@
 >cout << resp.GetText() << endl;  
 
 ### Put上传文件
->Response resp = Put("http://httpbin.org/put", "C:\\Users\\jack\\Desktop\\key.txt");  
+>Response resp = Put("http://httpbin.org/put", "C:\\\\Users\\\\jack\\\\Desktop\\\\key.txt");  
 >cout << resp.status << endl;  
 >cout << resp.GetText() << endl;  
 
@@ -40,6 +40,18 @@
 >string cookie = "BAIDUID=B066E871294A61BE394DE24FFA475653:FG=1; BIDUPSID=B066E871294A61BE9EF72E101F79BF87; PSTM=1578882286;";  
 >Response resp = Get("https://pan.baidu.com/disk/home",header,cookie);  
 >cout << resp.GetText() << endl;  
+
+### 设置代理
+>map<string, string> options;  
+>map<string, string> header;  
+>options["proxy"] = "http=http://122.51.49.88:8888";  
+>try{  
+>&nbsp;&nbsp;&nbsp;&nbsp;Response resp = Get("http://pv.sohu.com/cityjson",header , "", options);  
+>&nbsp;&nbsp;&nbsp;&nbsp;cout << resp.status << endl;  
+>}  
+>catch (const char *msg){  
+>&nbsp;&nbsp;&nbsp;&nbsp;cout << msg << endl;  
+>}  
 
 ### 自定义Http Header
 >map<string, string> header;  
