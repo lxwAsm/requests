@@ -21,24 +21,19 @@ string generate_key(string &name){
 }
 int _tmain(int argc, _TCHAR* argv[])
 {
-	
-	map<string, string> header;
-	map<string, string> options;
-	map<string, string> data;
-	map<string, string> files;
 	int a;
-	options["timeout"] = "3000";
-	data["key"] = "letmeupload";
-	data["submit"] = "Submit";
-	files["file"] = "C:\\Users\\jack\\Desktop\\key.txt";
+	map<string, string> options;
+	map<string, string> header;
+	//header["kk"] = "dd";
+	options["proxy"] = "http=http://122.51.49.88:8888";
 	try{
-		Response resp = Post("http://httpbin.org/post", "name=lx&age=24",header,"",options);
+		Response resp = Get("http://47.106.162.182:8080/ip.php",header , "", options);
 		cout << resp.status << endl;
-		cout << resp.GetText() << endl;
 	}
 	catch (const char *msg){
 		cout << msg << endl;
 	}
+	
 
 	cin >> a;
 	return 0;

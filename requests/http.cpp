@@ -585,8 +585,10 @@ std::string requests::http_err2str(DWORD code){
 Response	requests::https_send(string method, string url, int port, DWORD flags, BinaryData &data,const map<string, string> &head,std::string cookie,const map<string, string> &options){
 	Request req(url,method, head,options);
 	LPCTSTR lpszAgent = L"WinInetGet/0.1";
+	std::wstring proxy = s2ws(req.proxy);
+	LPCTSTR	lpszProxy = proxy.c_str();
 	HINTERNET hInternet = InternetOpen(lpszAgent,
-		INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+		INTERNET_OPEN_TYPE_PROXY, lpszProxy, NULL, 0);
 	auto domain = s2ws(req.domain);
 	//printf("domain:%S", domain.c_str());
 	LPCTSTR lpszServerName = domain.c_str();
@@ -625,16 +627,9 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 			dwError, err_info.c_str());
 		throw err_buffer;
 	}
-	//set internet option here
+	//Set Internet Timeout here
 	DWORD dwTimeOut = req.timeout;
 	InternetSetOption(hRequest, INTERNET_OPTION_CONNECT_TIMEOUT, &dwTimeOut, sizeof(dwTimeOut));
-	if (req.proxy.size() > 0){
-		INTERNET_PROXY_INFO proxy_info;
-		proxy_info.dwAccessType = INTERNET_OPEN_TYPE_PROXY;
-		proxy_info.lpszProxy = s2ws(req.proxy).c_str();
-		proxy_info.lpszProxyBypass = s2ws(req.proxy).c_str();
-		InternetSetOption(hRequest, INTERNET_OPTION_PROXY, &proxy_info, sizeof(proxy_info));
-	}
 	//Set Cookies Header
  	if (cookie.size()>0){
 		vector<string> name_value = SplitString(cookie, ";");
@@ -643,7 +638,7 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 			if (pos == -1) continue;
 			std::string name = s_trim(v.substr(0, pos));
 			std::string value = s_trim(v.substr(pos + 1));
-			if (InternetSetCookieA((req.prefix + req.domain).c_str(), name.c_str(),value.c_str())){
+			if (!InternetSetCookieA((req.prefix + req.domain).c_str(), name.c_str(),value.c_str())){
 				//printf("Cookies Add Ok");
 			}
 		}
