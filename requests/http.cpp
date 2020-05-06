@@ -587,8 +587,13 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 	LPCTSTR lpszAgent = L"WinInetGet/0.1";
 	std::wstring proxy = s2ws(req.proxy);
 	LPCTSTR	lpszProxy = proxy.c_str();
-	HINTERNET hInternet = InternetOpen(lpszAgent,
-		INTERNET_OPEN_TYPE_PROXY, lpszProxy, NULL, 0);
+	HINTERNET hInternet = NULL;
+	if (proxy.size() > 0){
+		hInternet = InternetOpen(lpszAgent,INTERNET_OPEN_TYPE_PROXY, lpszProxy, NULL, 0);
+	}
+	else{
+		hInternet = InternetOpen(lpszAgent,INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+	}	
 	auto domain = s2ws(req.domain);
 	//printf("domain:%S", domain.c_str());
 	LPCTSTR lpszServerName = domain.c_str();

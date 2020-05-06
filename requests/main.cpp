@@ -25,9 +25,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	map<string, string> options;
 	map<string, string> header;
 	//header["kk"] = "dd";
-	options["proxy"] = "http=http://122.51.49.88:8888";
+	//options["proxy"] = "http=http://122.51.49.88:8888";
 	try{
-		Response resp = Get("http://47.106.162.182:8080/ip.php",header , "", options);
+		Response resp = Get("http://47.106.162.182:8080/ip.php");
 		cout << resp.status << endl;
 	}
 	catch (const char *msg){
