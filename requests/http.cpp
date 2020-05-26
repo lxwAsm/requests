@@ -643,6 +643,10 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 	DWORD dwTimeOut = req.timeout;
 	InternetSetOption(hRequest, INTERNET_OPTION_CONNECT_TIMEOUT, &dwTimeOut, sizeof(dwTimeOut));
 	//Set Cookies Header
+	auto header_cookie=head.find("Cookie");
+	if (header_cookie!=head.end()){
+		cookie += ";" + header_cookie->second;
+	}
  	if (cookie.size()>0){
 		vector<string> name_value = SplitString(cookie, ";");
 		for (std::string v : name_value){

@@ -28,8 +28,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	data["password"] = "password";
 	data["remember"] = "yes";
 	data["login"] = "%E7%99%BB%E5%BD%95";
+	header["Cookie"] = "PHP=WhatISet";
 	Session	s;
-	Response login = s.Post("http://47.106.162.182:8080/basic/login.php", data);
+	Response login = s.Post("http://47.106.162.182:8080/basic/login.php", data, {}, header);
 	cout << login.GetText() << endl;
 	Response home = s.Get("http://47.106.162.182:8080/basic/index.php");
 	cout << home.GetText() << endl;
