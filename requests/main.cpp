@@ -21,21 +21,21 @@ string generate_key(string &name){
 }
 int _tmain(int argc, _TCHAR* argv[])
 {
-	int a;
-	map<string, string> options;
-	map<string, string> header;
-	//header["kk"] = "dd";
-	//options["proxy"] = "http=http://122.51.49.88:8888";
-	try{
-		Response resp = Get("http://47.106.162.182:8080/ip.php");
-		cout << resp.status << endl;
-	}
-	catch (const char *msg){
-		cout << msg << endl;
-	}
 	
-
-	cin >> a;
+	map<string, string>	header;
+	map<string, string> data;
+	data["username"] = "username";
+	data["password"] = "password";
+	data["remember"] = "yes";
+	data["login"] = "%E7%99%BB%E5%BD%95";
+	Session	s;
+	Response login = s.Post("http://47.106.162.182:8080/basic/login.php", data);
+	cout << login.GetText() << endl;
+	Response home = s.Get("http://47.106.162.182:8080/basic/index.php");
+	cout << home.GetText() << endl;
+	Response logout = s.Get("http://47.106.162.182:8080/basic/logout.php");
+	cout << logout.GetText() << endl;
+	getchar();
 	return 0;
 }
 

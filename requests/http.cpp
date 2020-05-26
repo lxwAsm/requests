@@ -30,6 +30,7 @@ unsigned int Response::status2int(string &st){
 }
 Response::Response(std::string h,std::string origin_domain,shared_ptr<BinaryData> data){
 	string head;
+	this->req_domain = origin_domain;
 	int pos = h.find("\r\n\r\n");
 	if (pos != -1){
 		head = h.substr(0, pos);
@@ -51,20 +52,18 @@ Response::Response(std::string h,std::string origin_domain,shared_ptr<BinaryData
 		string value = line[i].substr(p + 1, line[i].size() - 1 - p);
 		header[key] = value;
 		//printf("https header%s:%s\n", key.c_str(), value.c_str());
-	}
-	if (header.find("Set-Cookie")!=header.end()){
-		vector<string> name_value;
-		SplitString(header["Set-Cookie"], name_value,";");
-		for (std::string v : name_value){
-			int pos = v.find("=");
-			if (pos == -1) continue;
-			std::string name = s_trim(v.substr(0, pos));
-			std::string value = s_trim(v.substr(pos + 1));
-			cookie[name] = value;
+		if (key == s_trim("Set-Cookie")){
+			vector<string> name_value;
+			SplitString(value, name_value, ";");
+			for (std::string v : name_value){
+				int pos = v.find("=");
+				if (pos == -1) continue;
+				std::string name = s_trim(v.substr(0, pos));
+				std::string value = s_trim(v.substr(pos + 1));
+				cookie[name] = value;//save cookie dic
+			}
+			this->vec_cookie.push_back(value);//save multi cookie str
 		}
-		if (InternetSetCookieA(origin_domain.c_str(), NULL, header["Set-Cookie"].c_str()) == TRUE){
-			//printf("Set-Cookie OK");
-		};
 	}
 }
 void Response::SplitString(const string& s, vector<string>& v, const string& c)
@@ -110,7 +109,6 @@ Request::Request(std::string url, std::string method, const map<string, string> 
 	//http://www.baidu.com/hello?jack=123
 	header["User-Agent"] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36";
 	header["Connection"] = "Keep-Alive";
-	map<std::string, std::string> default_options;
 	default_options["timeout"] = "3000";
 	default_options["proxy"] = "";
 	this->method = method;//请求get post delete put
@@ -203,27 +201,36 @@ Request::~Request(){
 }
 
 Session::Session(){
-
+	
 }
 
 Session::~Session(){
 	
 }
 
-Response Session::Get(std::string url,const map<string, string> &head, std::string cookie_arg,const map<string, string> &options){
-	BinaryData db;
-	Response r = requests::request("GET", url, db, head, cookie_arg, options);
+bool	 Session::InstallCookie(Response &r){
+	bool	isSuccess = FALSE;
 	for (auto i : r.cookie){
 		cookies[i.first] = i.second;
 	}
+	if (r.vec_cookie.size() > 0){
+		this->vec_cookie = r.vec_cookie;
+	}
+	for (std::string &c : r.vec_cookie){
+		isSuccess=InternetSetCookieA(r.req_domain.c_str(), NULL, c.c_str())==TRUE;
+	}
+	return isSuccess;
+}
+Response Session::Get(std::string url,const map<string, string> &head, std::string cookie_arg,const map<string, string> &options){
+	BinaryData db;
+	Response r = requests::request("GET", url, db, head, cookie_arg, options);
+	this->InstallCookie(r);
 	return r;
 }
 
 Response Session::Post(std::string url, map<string, string> &data,const map<string, string> files,const map<string, string> &head, std::string cookie_arg,const map<string, string> &options){
 	Response r = https_post(url, data, files, head, cookie_arg, options);
-	for (auto i : r.cookie){
-		cookies[i.first] = i.second;
-	}
+	this->InstallCookie(r);
 	return r;
 }
 
@@ -419,7 +426,7 @@ Response	requests::request(string method, string url, BinaryData &data,const map
 	if (to_lower(url.substr(0, 6)) == "https:"){
 		 flags = INTERNET_FLAG_IGNORE_REDIRECT_TO_HTTP |
 			INTERNET_FLAG_KEEP_CONNECTION |
-			INTERNET_FLAG_NO_AUTH |
+			//INTERNET_FLAG_NO_AUTH |
 			//INTERNET_FLAG_NO_COOKIES |
 			INTERNET_FLAG_NO_UI |
 			INTERNET_FLAG_SECURE |
@@ -598,8 +605,8 @@ Response	requests::https_send(string method, string url, int port, DWORD flags, 
 	//printf("domain:%S", domain.c_str());
 	LPCTSTR lpszServerName = domain.c_str();
 	INTERNET_PORT nServerPort = req.port; //
-	LPCTSTR lpszUserName = NULL; //
-	LPCTSTR lpszPassword = NULL; //
+	LPCTSTR lpszUserName = NULL;//s2ws(req.default_options["username"]).c_str(); //
+	LPCTSTR lpszPassword = NULL;//s2ws(req.default_options["password"]).c_str(); //
 	DWORD dwConnectFlags = 0;
 	DWORD dwConnectContext = 0;
 	DWORD dwError = 0;

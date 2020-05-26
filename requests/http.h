@@ -48,6 +48,8 @@
 			const  byte*GetBinary();
 			unsigned int size();
 			map < std::string, std::string> cookie;
+			std::vector<std::string>		vec_cookie;
+			std::string		req_domain;
 			std::string	operator[](std::string key);
 			unsigned int status;
 		private:
@@ -72,19 +74,27 @@
 			unsigned int timeout;
 			std::string proxy;
 			map<string, string>	header;
+			map<std::string, std::string> default_options;
 			int	port;
 			std::string method;
 		};
 		class Session{
 		public:
 			Session();
+			Session(std::string proxy);
 			~Session();
 			Response	Get(std::string url, const map<string, string> &head = map<string, string>(), std::string cookie = "", const map<string, string> &options = map<string, string>());
 			Response	Post(std::string url, map<string, string> &data,const map<string, string> files = map<string, string>(), const map<string, string> &head = map<string, string>(), std::string cookie = "", const map<string, string> &options = map<string, string>());
 			Response	Post(std::string url, BinaryData &data,const map<string, string> &head = map<string, string>(), const map<string, string> &options = map<string, string>());
 			map<std::string, std::string> cookies;
+			std::vector<std::string>	vec_cookie;
 		private:
-			//HINTERNET	hInternet;
+			HINTERNET	hInternet;
+			HINTERNET	hConnect;
+			HINTERNET	hRequest;
+			std::string	inner_proxy;
+		private:
+			bool		InstallCookie(Response &r);
 		};
 	
 		std::string GetIpByDomainName(const char *szHost);
