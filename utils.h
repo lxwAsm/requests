@@ -16,20 +16,12 @@ std::string to_lower(std::string str);
 class Base64
 {
 public:
-	/*编码
-	DataByte
-	[in]输入的数据长度,以字节为单位
-	*/
 	std::string Encode(char* Data, int DataByte);
-	/*解码
-	DataByte
-	[in]输入的数据长度,以字节为单位
-	OutByte
-	[out]输出的数据长度,以字节为单位,请不要通过返回值计算
-	输出数据的长度
-	*/
 	std::string Decode(const char* Data, int DataByte, int& OutByte);
 };
+
+std::string md5(const std::string str);
+std::vector<std::string> SplitString(const std::string& s, const std::string& c);
 
 class MD5
 {
@@ -71,9 +63,6 @@ private:
 	static inline void HH(uint4 &a, uint4 b, uint4 c, uint4 d, uint4 x, uint4 s, uint4 ac);
 	static inline void II(uint4 &a, uint4 b, uint4 c, uint4 d, uint4 x, uint4 s, uint4 ac);
 };
-
-std::string md5(const std::string str);
-std::vector<std::string> SplitString(const std::string& s, const std::string& c);
 
 static  std::string ltrim(std::string s);
 static  std::string rtrim(std::string s);
