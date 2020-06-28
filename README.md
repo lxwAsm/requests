@@ -5,6 +5,9 @@
 >目前实现的http动作有：GET POST HEAD OPTIONS PUT DELETE  
 
 [安装编译演示视频](https://www.bilibili.com/video/bv1gV411Z7fT)  
+### VisualStudio nuget安装（推荐）  
+>工具->nuget包管理器->程序包管理控制台->输入: Install-Package CppRequests -Version 0.0.5  
+
 ### 入门
 >#include \<iostream>  
 >#include \<string>  
